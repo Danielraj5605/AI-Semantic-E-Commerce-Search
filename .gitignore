@@ -1,0 +1,78 @@
+# =============================================================================
+# SECRETS & ENVIRONMENT VARIABLES — never commit these
+# =============================================================================
+.env
+.env.*
+!.env.example
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.cover
+venv/
+.venv/
+env/
+.env/
+
+# Sentence Transformers / HuggingFace model cache
+# (large binary files — re-downloaded automatically)
+backend/models/
+~/.cache/huggingface/
+*.bin
+*.safetensors
+*.pt
+*.onnx
+
+# =============================================================================
+# NODE / FRONTEND
+# =============================================================================
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =============================================================================
+# DATA FILES — may contain PII or large datasets
+# =============================================================================
+data/*.csv
+data/*.json
+data/*.parquet
+data/*.xlsx
+data/*.db
+data/*.sqlite
+
+# =============================================================================
+# IDE & OS
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
