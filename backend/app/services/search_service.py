@@ -1,11 +1,12 @@
 """Search service — semantic and keyword search logic."""
 
 import logging
+import re
 from typing import Optional
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import select, func, text, and_, cast, String
+from sqlalchemy import select, func, text, and_, cast, String, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.models import Product, ProductEmbedding, Category
@@ -216,6 +217,23 @@ async def _semantic_search_in_python(
     return [_format_result(p, c, s) for p, s, c in page], len(scored)
 
 
+_STOPWORDS = {
+    "a", "an", "the", "for", "to", "of", "and", "or", "with", "in", "on", "that",
+    "is", "are", "my", "me", "i", "something", "some",
+}
+
+
+def _keyword_terms(query: str) -> list[str]:
+    """Significant lower-cased words of a query; the raw phrase if none survive."""
+    words = re.findall(r"[\w'&-]+", query.lower())
+    terms = [w for w in words if w not in _STOPWORDS and len(w) > 1]
+    return terms or [query.strip().lower()]
+
+
+def _escape_like(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 async def keyword_search(
     db: AsyncSession,
     query: str,
@@ -232,17 +250,23 @@ async def keyword_search(
     This is simpler and faster but only matches literal substrings.
     Used as a fallback if the embedding service is unavailable.
     """
-    search_pattern = f"%{query}%"
-
-    stmt = (
-        select(Product, Category.name.label("category_name"))
-        .outerjoin(Category, Product.category_id == Category.category_id)
-        .where(
-            (Product.name.ilike(search_pattern))
-            | (Product.description.ilike(search_pattern))
-            | (Product.brand.ilike(search_pattern))
-        )
+    terms = _keyword_terms(query)
+    stmt = select(Product, Category.name.label("category_name")).outerjoin(
+        Category, Product.category_id == Category.category_id
     )
+    # Every term must appear somewhere (AND), so "warm jacket" matches a product
+    # that says "jacket" in its name and "warm" in its description. Matching the
+    # whole phrase as one substring made multi-word queries almost never hit.
+    name_hits = []
+    for term in terms:
+        pattern = f"%{_escape_like(term)}%"
+        in_name = Product.name.ilike(pattern, escape="\\")
+        stmt = stmt.where(
+            in_name
+            | Product.description.ilike(pattern, escape="\\")
+            | Product.brand.ilike(pattern, escape="\\")
+        )
+        name_hits.append(case((in_name, 1), else_=0))
 
     # Apply filters
     filters = _structural_filters(
@@ -258,7 +282,8 @@ async def keyword_search(
     total = total_result.scalar() or 0
 
     # Paginate
-    stmt = stmt.order_by(Product.rating_avg.desc()).offset(offset).limit(limit)
+    # Terms found in the name rank first; rating breaks ties.
+    stmt = stmt.order_by(sum(name_hits).desc(), Product.rating_avg.desc()).offset(offset).limit(limit)
 
     result = await db.execute(stmt)
     rows = result.all()
@@ -293,7 +318,7 @@ async def get_autocomplete_suggestions(
     """Return product name suggestions matching a prefix."""
     stmt = (
         select(Product.name)
-        .where(Product.name.ilike(f"{prefix}%"))
+        .where(Product.name.ilike(f"{_escape_like(prefix)}%", escape="\\"))
         .distinct()
         .order_by(Product.name)
         .limit(limit)

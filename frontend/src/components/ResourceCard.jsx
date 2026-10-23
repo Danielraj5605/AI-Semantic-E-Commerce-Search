@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { productToTriples, productURI, categoryURI } from "../rdf";
 import { trustBand, proofSteps } from "../concepts";
 import { ResourceGraph } from "./GraphView";
 import Term from "./Term";
+import { recordClick } from "../api";
 
 /**
  * A result is presented as a *resource*, not a product tile: it is announced by
@@ -39,7 +40,15 @@ export default function ResourceCard({ result, query, mode, rank }) {
   const trust = trustBand(score, mode);
   const proof = useMemo(() => proofSteps(result, query, mode), [result, query, mode]);
 
-  const toggle = (next) => setTab((cur) => (cur === next ? null : next));
+  const clicked = useRef(false);
+  const toggle = (next) => {
+    // Opening a result is the click signal; count it once per card.
+    if (!clicked.current) {
+      clicked.current = true;
+      recordClick(query, product.product_id);
+    }
+    setTab((cur) => (cur === next ? null : next));
+  };
 
   return (
     <article className="res" aria-labelledby={`res-${product.product_id}`}>

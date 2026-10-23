@@ -6,7 +6,9 @@ import pytest
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    body = r.json()
+    assert body["database"] == "ok"
+    assert body["status"] in {"ok", "degraded"}  # degraded while the model warms up
 
 
 def test_filters_shape(client):

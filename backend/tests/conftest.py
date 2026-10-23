@@ -33,3 +33,8 @@ def client():
 
     with TestClient(app) as c:  # runs lifespan, loads the embedding model once
         yield c
+
+
+@pytest.fixture(scope="session")
+def db_path():
+    return _db

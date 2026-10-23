@@ -1,13 +1,18 @@
 """FastAPI application entry point."""
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.search import router as search_router
 from app.config import get_settings
+from app.db.session import async_session
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,10 +28,17 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Semantic Search API...")
     logger.info("Embedding model: %s (%d dimensions)", settings.embedding_model, settings.embedding_dimension)
 
-    # Pre-load the embedding model so the first search isn't slow
-    from app.services.embedding_service import get_model
-    get_model()
-    logger.info("Embedding model loaded and ready.")
+    # Warm the embedding model in the background. The API must come up even if
+    # the model cannot load; search then degrades to keyword (FR6 / NFR4).
+    from app.services.embedding_service import get_model, EmbeddingUnavailable
+
+    def _warm():
+        try:
+            get_model()
+        except EmbeddingUnavailable:
+            logger.warning("Starting without embeddings; search will use keyword fallback.")
+
+    threading.Thread(target=_warm, name="embedding-warmup", daemon=True).start()
 
     yield
 
@@ -53,7 +65,32 @@ app.add_middleware(
 app.include_router(search_router)
 
 
+@app.exception_handler(SQLAlchemyError)
+@app.exception_handler(ConnectionError)
+async def database_unavailable(request: Request, exc: Exception):
+    """A dead database is a 503 the UI can explain, not an opaque 500."""
+    logger.error("Database error on %s: %s", request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": "database unavailable"})
+
+
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok", "model": settings.embedding_model}
+    """Report real component state; 503 only when the database is unreachable."""
+    from app.services.embedding_service import embedding_status
+
+    try:
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
+        database = "ok"
+    except Exception as exc:
+        logger.error("Health check: database down: %s", exc)
+        database = "down"
+
+    embeddings = embedding_status()
+    body = {
+        "status": "ok" if database == "ok" and embeddings == "ready" else "degraded",
+        "model": settings.embedding_model,
+        "embeddings": embeddings,
+        "database": database,
+    }
+    return JSONResponse(status_code=200 if database == "ok" else 503, content=body)

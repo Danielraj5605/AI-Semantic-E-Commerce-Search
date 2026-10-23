@@ -1,24 +1,73 @@
 """Embedding service — loads the sentence-transformer model and encodes text."""
 
 import logging
+import threading
+import time
+
 from sentence_transformers import SentenceTransformer
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Module-level model singleton — loaded once at import time
+# After a failed load, don't retry (and potentially hang on the network) for
+# every request: callers get a fast EmbeddingUnavailable and fall back instead.
+RETRY_AFTER_SECONDS = 60
+
+
+class EmbeddingUnavailable(RuntimeError):
+    """The embedding model cannot be loaded or used right now."""
+
+
+# Module-level model singleton — loaded once
 _model: SentenceTransformer | None = None
+_failed_at: float | None = None
+_lock = threading.Lock()
+
+
+def _load() -> SentenceTransformer:
+    # Cache first: a model already on disk must never depend on the network.
+    # Hub probes can hang for minutes when offline, which used to stop the whole
+    # app from starting.
+    try:
+        return SentenceTransformer(settings.embedding_model, local_files_only=True)
+    except Exception:
+        logger.info("Model not in local cache, downloading: %s", settings.embedding_model)
+        return SentenceTransformer(settings.embedding_model)
 
 
 def get_model() -> SentenceTransformer:
-    """Lazy-load and cache the embedding model."""
-    global _model
-    if _model is None:
-        logger.info("Loading embedding model: %s", settings.embedding_model)
-        _model = SentenceTransformer(settings.embedding_model)
-        logger.info("Embedding model loaded successfully.")
+    """Lazy-load and cache the embedding model.
+
+    Raises EmbeddingUnavailable if it cannot be loaded.
+    """
+    global _model, _failed_at
+    if _model is not None:
+        return _model
+    with _lock:
+        if _model is not None:
+            return _model
+        if _failed_at is not None and time.monotonic() - _failed_at < RETRY_AFTER_SECONDS:
+            raise EmbeddingUnavailable("embedding model failed to load recently")
+        try:
+            logger.info("Loading embedding model: %s", settings.embedding_model)
+            _model = _load()
+            _failed_at = None
+            logger.info("Embedding model loaded successfully.")
+        except Exception as exc:
+            _failed_at = time.monotonic()
+            logger.error("Embedding model unavailable: %s", exc)
+            raise EmbeddingUnavailable(str(exc)) from exc
     return _model
+
+
+def embedding_status() -> str:
+    """'ready', 'unavailable' or 'loading' (not attempted yet, or in progress)."""
+    if _model is not None:
+        return "ready"
+    if _failed_at is not None:
+        return "unavailable"
+    return "loading"
 
 
 def encode_text(text: str) -> list[float]:

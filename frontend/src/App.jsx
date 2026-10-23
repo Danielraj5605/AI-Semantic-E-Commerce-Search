@@ -350,6 +350,16 @@ export default function App() {
             </div>
           )}
 
+          {!error && results && mode === "semantic" && results.search_type === "keyword" && (
+            <div className="notice">
+              <h2 className="notice__title">Showing literal matches</h2>
+              <p className="notice__body">
+                The meaning encoder is unavailable, so this answer comes from plain string
+                matching and carries no similarity scores.
+              </p>
+            </div>
+          )}
+
           {error && (
             <div className="notice notice--bad">
               <h2 className="notice__title">The service did not respond</h2>

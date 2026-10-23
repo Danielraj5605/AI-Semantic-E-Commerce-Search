@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:8000/api";
+// Override at build/dev time with VITE_API_BASE (see .env.example).
+const API_BASE = import.meta.env?.VITE_API_BASE || "http://localhost:8000/api";
 
 /**
  * Perform a semantic search.
@@ -62,4 +63,17 @@ export async function getFilters() {
   const res = await fetch(`${API_BASE}/filters`);
   if (!res.ok) throw new Error(`Filters failed: ${res.status}`);
   return res.json();
+}
+
+/**
+ * Record that a result was opened. Fire-and-forget: feedback must never
+ * interrupt or slow the interface, so failures are swallowed.
+ */
+export function recordClick(query, productId) {
+  return fetch(`${API_BASE}/click`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, product_id: productId }),
+    keepalive: true,
+  }).catch(() => {});
 }

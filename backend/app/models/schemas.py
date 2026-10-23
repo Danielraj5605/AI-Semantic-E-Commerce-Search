@@ -76,3 +76,11 @@ class FilterOptions(BaseModel):
     categories: List[CategoryOut]
     brands: List[str]
     price_range: dict  # {"min": float, "max": float}
+
+
+# ---------- Click feedback ----------
+
+class ClickEvent(BaseModel):
+    """A result the user opened, recorded against the query that produced it."""
+    query: str = Field(..., min_length=1, max_length=500)
+    product_id: UUID

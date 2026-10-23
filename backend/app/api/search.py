@@ -4,18 +4,20 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from cachetools import TTLCache
 
 from app.db.session import get_db
-from app.models.schemas import SearchResponse, AutocompleteResponse, FilterOptions
+from app.models.schemas import SearchResponse, AutocompleteResponse, FilterOptions, ClickEvent
 from app.services.search_service import (
     semantic_search,
     keyword_search,
     get_autocomplete_suggestions,
     get_filter_options,
 )
-from app.models.models import SearchLog
+from app.models.models import SearchLog, Product
+from app.services.embedding_service import EmbeddingUnavailable
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -36,6 +38,16 @@ def _cache_key(query: str, **kwargs) -> str:
         if kwargs[k] is not None:
             parts.append(f"{k}={kwargs[k]}")
     return "|".join(parts)
+
+
+async def _log_search(db: AsyncSession, query: str, product_id=None) -> None:
+    """Record a search (or a click). Logging must never fail the request."""
+    try:
+        db.add(SearchLog(query_text=query, clicked_product_id=product_id))
+        await db.commit()
+    except Exception as err:
+        await db.rollback()
+        logger.warning("Failed to log search: %s", err)
 
 
 @router.get("/search", response_model=SearchResponse)
@@ -63,9 +75,10 @@ async def search(
         limit=limit, offset=offset,
     )
 
-    # Check cache
+    # Check cache — a hit is still a search, so it is still logged
     if cache_key in _search_cache:
         logger.debug("Cache hit for: %s", q)
+        await _log_search(db, q)
         return _search_cache[cache_key]
 
     try:
@@ -77,9 +90,11 @@ async def search(
             min_rating=min_rating, min_similarity=min_similarity,
         )
         search_type = "semantic"
-    except Exception as e:
-        # Fallback to keyword search if embedding service fails
-        logger.warning("Semantic search failed, falling back to keyword: %s", e)
+    except EmbeddingUnavailable as e:
+        # Only a missing encoder degrades to keyword. Database errors are not
+        # caught here: keyword search would hit the same database and fail too,
+        # so they surface as a 503 instead of a misleading "keyword" result.
+        logger.warning("Embeddings unavailable, falling back to keyword: %s", e)
         results, total = await keyword_search(
             db, q,
             limit=limit, offset=offset,
@@ -96,16 +111,11 @@ async def search(
         search_type=search_type,
     )
 
-    # Cache the response
-    _search_cache[cache_key] = response
+    # Cache only real semantic answers; a degraded one must not outlive the outage
+    if search_type == "semantic":
+        _search_cache[cache_key] = response
 
-    # Log the search (fire-and-forget, don't block the response)
-    try:
-        log_entry = SearchLog(query_text=q)
-        db.add(log_entry)
-    except Exception as log_err:
-        logger.warning("Failed to log search: %s", log_err)
-
+    await _log_search(db, q)
     return response
 
 
@@ -153,3 +163,13 @@ async def filters(db: AsyncSession = Depends(get_db)):
     """Return available filter values for the sidebar."""
     options = await get_filter_options(db)
     return FilterOptions(**options)
+
+
+@router.post("/click")
+async def record_click(event: ClickEvent, db: AsyncSession = Depends(get_db)):
+    """Record that the user opened a result — the signal personalisation would need."""
+    exists = await db.scalar(select(Product.product_id).where(Product.product_id == event.product_id))
+    if exists is None:
+        raise HTTPException(status_code=404, detail="unknown product")
+    await _log_search(db, event.query, product_id=event.product_id)
+    return {"ok": True}
