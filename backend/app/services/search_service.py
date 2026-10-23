@@ -28,8 +28,14 @@ async def semantic_search(
     max_price: Optional[float] = None,
     min_rating: Optional[float] = None,
     min_similarity: Optional[float] = None,
+    query_embedding: Optional[list[float]] = None,
+    exclude_id: Optional[UUID] = None,
 ) -> tuple[list[dict], int]:
     """Perform semantic similarity search using pgvector cosine distance.
+
+    `query_embedding` skips the encoder (used by "find similar", which ranks by a
+    stored vector and so works even when the model is down); `exclude_id` keeps
+    the seed product out of its own neighbours.
 
     A nearest-neighbour scan has no natural stopping point: every embedded
     product has *some* distance to the query, so without a relevance floor the
@@ -44,14 +50,15 @@ async def semantic_search(
     if min_similarity is None:
         min_similarity = settings.min_similarity
     # 1. Encode the query
-    query_embedding = encode_text(query)
+    if query_embedding is None:
+        query_embedding = encode_text(query)
     category_names = await expand_category(db, category)
 
     if settings.is_sqlite:
         return await _semantic_search_in_python(
             db, query_embedding, limit, offset,
             category, brand, min_price, max_price, min_rating, min_similarity,
-            category_names,
+            category_names, exclude_id,
         )
 
     # 2. Build the base query with cosine distance
@@ -71,7 +78,7 @@ async def semantic_search(
     )
 
     # 3. Apply filters
-    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating)
+    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating, exclude_id)
 
     # The relevance floor exists to stop an open-ended query from dragging the
     # whole catalogue back with it. An explicit category or brand already does
@@ -140,8 +147,10 @@ async def expand_category(db: AsyncSession, category: Optional[str]) -> Optional
     return sorted({names[c].lower() for c in seen} | {category.lower()})
 
 
-def _structural_filters(category_names, brand, min_price, max_price, min_rating) -> list:
+def _structural_filters(category_names, brand, min_price, max_price, min_rating, exclude_id=None) -> list:
     filters = []
+    if exclude_id is not None:
+        filters.append(Product.product_id != exclude_id)
     if category_names:
         filters.append(func.lower(Category.name).in_(category_names))
     if brand:
@@ -186,6 +195,7 @@ async def _semantic_search_in_python(
     min_rating: Optional[float],
     min_similarity: float,
     category_names: Optional[list[str]] = None,
+    exclude_id: Optional[UUID] = None,
 ) -> tuple[list[dict], int]:
     """Same contract as the pgvector path, for the local SQLite database.
 
@@ -197,7 +207,7 @@ async def _semantic_search_in_python(
         .join(ProductEmbedding, Product.product_id == ProductEmbedding.product_id)
         .outerjoin(Category, Product.category_id == Category.category_id)
     )
-    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating)
+    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating, exclude_id)
     if filters:
         stmt = stmt.where(and_(*filters))
 
@@ -308,6 +318,44 @@ async def keyword_search(
         })
 
     return results, total
+
+
+async def get_product_row(db: AsyncSession, product_id: UUID) -> Optional[dict]:
+    """One product in the same shape as a search result's `product`, or None."""
+    row = (
+        await db.execute(
+            select(Product, Category.name.label("category_name"))
+            .outerjoin(Category, Product.category_id == Category.category_id)
+            .where(Product.product_id == product_id)
+        )
+    ).first()
+    if row is None:
+        return None
+    return _format_result(row[0], row[1], 0)["product"]
+
+
+async def similar_products(
+    db: AsyncSession, product_id: UUID, limit: int = 10, offset: int = 0,
+    min_similarity: Optional[float] = None,
+) -> Optional[tuple[dict, list[dict], int]]:
+    """Neighbours of a product by its stored embedding.
+
+    Returns (seed_product, results, total), or None if the product is unknown or
+    has no embedding yet.
+    """
+    seed = await get_product_row(db, product_id)
+    vector = await db.scalar(
+        select(ProductEmbedding.embedding).where(ProductEmbedding.product_id == product_id)
+    )
+    if seed is None or vector is None:
+        return None
+    results, total = await semantic_search(
+        db, seed["name"], limit=limit, offset=offset,
+        min_similarity=min_similarity,
+        query_embedding=[float(x) for x in vector],
+        exclude_id=product_id,
+    )
+    return seed, results, total
 
 
 async def get_autocomplete_suggestions(

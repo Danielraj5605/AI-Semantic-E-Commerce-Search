@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { searchProducts, keywordSearch, getFilters } from "./api";
+import { searchProducts, keywordSearch, getFilters, getSimilar } from "./api";
 import { toJSONLD, resultsToTriples, categoryURI } from "./rdf";
 import { describeService, EXAMPLE_QUERIES } from "./concepts";
 
@@ -206,6 +206,20 @@ export default function App() {
     [mode, active]
   );
 
+  const findSimilar = async (product) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getSimilar(product.product_id);
+      setResults({ ...res, similar: true, seedName: product.name });
+      setView("resources");
+    } catch (err) {
+      setError(err.message || "Could not find similar products.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const changeConstraint = (key, value) => {
     const next = { ...active, [key]: value };
     if (value === null || value === "") delete next[key];
@@ -321,11 +335,20 @@ export default function App() {
                   </span>
                 </h1>
                 <p className="answer__detail">
-                  bound to <code className="answer__q">?query “{results.query}”</code> ·{" "}
-                  {statementCount} statements ·{" "}
-                  <button className="linkbtn" onClick={() => setInspector("sparql")}>
-                    see the SPARQL
-                  </button>
+                  {results.similar ? (
+                    <>nearest to <code className="answer__q">“{results.seedName}”</code> by embedding</>
+                  ) : (
+                    <>bound to <code className="answer__q">?query “{results.query}”</code></>
+                  )}{" "}
+                  · {statementCount} statements
+                  {!results.similar && (
+                    <>
+                      {" "}·{" "}
+                      <button className="linkbtn" onClick={() => setInspector("sparql")}>
+                        see the SPARQL
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -382,6 +405,7 @@ export default function App() {
                   query={results.query}
                   mode={results.search_type || mode}
                   rank={i + 1}
+                  onSimilar={findSimilar}
                 />
               ))}
             </div>

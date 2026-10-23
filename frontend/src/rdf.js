@@ -170,7 +170,7 @@ export function productToTriples(product, score = null) {
     out.push(
       triple(rating, uri("schema:ratingValue"), literal(Number(product.rating_avg).toFixed(1), "xsd:decimal"))
     );
-    out.push(triple(rating, uri("schema:bestRating"), literal("5", "xsd:decimal")));
+    out.push(triple(rating, uri("schema:bestRating"), literal("5.0", "xsd:decimal")));
   }
 
   if (product.created_at) {
@@ -371,7 +371,7 @@ export function toJSONLD(results = []) {
       node["schema:aggregateRating"] = {
         "@type": "schema:AggregateRating",
         "schema:ratingValue": Number(product.rating_avg).toFixed(1),
-        "schema:bestRating": "5",
+        "schema:bestRating": "5.0",
       };
     }
     if (score !== null && score !== undefined) {

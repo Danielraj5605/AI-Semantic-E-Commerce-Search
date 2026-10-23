@@ -27,7 +27,7 @@ function Stars({ value = 0 }) {
   );
 }
 
-export default function ResourceCard({ result, query, mode, rank }) {
+export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
   const { product, score } = result;
   const [tab, setTab] = useState(null); // null | 'triples' | 'graph' | 'proof'
   const [imgFailed, setImgFailed] = useState(false);
@@ -138,6 +138,11 @@ export default function ResourceCard({ result, query, mode, rank }) {
         <button className={tab === "proof" ? "is-on" : ""} onClick={() => toggle("proof")}>
           Why this?
         </button>
+        {onSimilar && mode !== "keyword" && (
+          <button onClick={() => onSimilar(product)} title="Products nearest to this one by embedding">
+            Similar ↗
+          </button>
+        )}
       </nav>
 
       {tab === "triples" && (

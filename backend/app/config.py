@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = 300  # 5 minute cache
     cache_max_size: int = 512
 
+    # Namespace for minted resource URIs (products, brands). The default matches
+    # the frontend. Set it to this API's own address, e.g. http://localhost:8000/api/,
+    # and every product URI becomes dereferenceable via /api/product/{id}.
+    base_uri: str = "http://example.org/catalog/"
+
+    # Admin write endpoints are mounted only when a token is set. Empty = disabled.
+    admin_token: str = ""
+
     # CORS
     frontend_url: str = "http://localhost:5173"
 

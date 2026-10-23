@@ -14,3 +14,4 @@ pydantic-settings==2.5.0
 python-dotenv==1.0.1
 alembic==1.13.3
 cachetools==5.5.0
+rdflib>=7.0

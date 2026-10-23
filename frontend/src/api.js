@@ -66,6 +66,15 @@ export async function getFilters() {
 }
 
 /**
+ * Products nearest to one product, by its stored embedding.
+ */
+export async function getSimilar(productId, limit = 12) {
+  const res = await fetch(`${API_BASE}/product/${productId}/similar?limit=${limit}`);
+  if (!res.ok) throw new Error(`Similar products failed: ${res.status}`);
+  return res.json();
+}
+
+/**
  * Record that a result was opened. Fire-and-forget: feedback must never
  * interrupt or slow the interface, so failures are swallowed.
  */

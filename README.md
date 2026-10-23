@@ -176,7 +176,19 @@ cd frontend && npm install && npm run dev
 | `GET` | `/api/search/keyword?q=…` | Keyword-only baseline / fallback |
 | `GET` | `/api/autocomplete?q=…` | Prefix suggestions on product names |
 | `GET` | `/api/filters` | Categories, brands, price range — the raw material for the class tree |
-| `GET` | `/health` | Health check |
+| `GET` | `/api/product/{id}` | One product. `Accept: text/turtle`, `application/rdf+xml` or `application/ld+json` (or `?format=ttl\|rdf\|jsonld`) returns its RDF description; otherwise JSON |
+| `GET` | `/api/product/{id}/similar` | Nearest products by stored embedding (works with the encoder down) |
+| `POST` | `/api/click` | Record that a result was opened (`{query, product_id}`) |
+| `POST/PUT/DELETE` | `/api/admin/products[/{id}]` | Add / update / delete a product and re-embed it. **Only mounted when `ADMIN_TOKEN` is set**; send it as `X-Admin-Token` |
+| `GET` | `/health` | Component state: database and embedding model (503 only if the database is down) |
+
+### Linked Data
+
+Set `BASE_URI=http://localhost:8000/api/` and every product URI becomes the URL that serves it:
+
+```bash
+curl -H 'Accept: text/turtle' http://localhost:8000/api/product/<uuid>
+```
 | `GET` | `/docs` | Swagger UI |
 
 ### Search parameters

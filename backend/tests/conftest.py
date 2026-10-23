@@ -21,6 +21,7 @@ if _source.exists():
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")  # model is cached; a network probe can hang startup
 os.environ["USE_LOCAL_DB"] = "true"
+os.environ["ADMIN_TOKEN"] = "test-admin-token"  # mounts the admin routes under test
 os.environ["LOCAL_DB_PATH"] = _db.as_posix()  # absolute path wins over BACKEND_DIR
 
 
