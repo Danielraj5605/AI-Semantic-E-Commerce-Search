@@ -36,13 +36,14 @@ This project pairs them deliberately, and the interface is built to make the pai
 | XML + Namespaces | ✅ full | RDF/XML output with prefixed vocabularies; no term collides |
 | RDF | ✅ full | Each catalogue row lifted into triples over schema.org and Dublin Core |
 | RDF Schema | ✅ full | Categories become `owl:Class` nodes joined by `rdfs:subClassOf` |
-| Ontology (OWL) | ◐ partial | Object/datatype properties with declared ranges; browsable class tree |
-| Logic | ◐ partial | Subclass entailment on filtering (choosing *Electronics* returns Laptops too); no deeper inference |
-| Proof | ◐ partial | Every result has a "Why this?" trace of the steps that produced it |
-| Trust | ◐ partial | Provenance (`prov:wasDerivedFrom`) and a confidence band per assertion |
+| Ontology (OWL) | ✅ full | A real OWL ontology (`GET /api/ontology`): class tree, disjointness, domain/range, an inverse property, cardinality restrictions, and defined classes (`TopRated`, `Premium`, `InStockProduct`) as `owl:equivalentClass` |
+| Logic | ✅ full | A forward-chaining reasoner applies six RDFS/OWL-RL rules to every product and five consistency checks to the whole catalogue (`GET /api/ontology/validate`) |
+| Proof | ✅ full | Every inferred fact has a proof tree (rule, premises, down to catalogue rows and ontology axioms): `GET /api/product/{id}/proof`, or **Reasoning** on any result |
+| Trust | ✅ full | PROV-O provenance per product and inference; match confidence **measured** from the evaluation; HMAC-signed canonical digest that detects a single altered triple |
 
-The upper three layers are where most working systems stop short, including this one. The UI says so
-rather than claiming otherwise.
+"Full" means complete for this application's scope, and the scope is stated: the reasoner is rule-based
+(OWL 2 RL style), not an OWL DL tableau prover. It has no open-world satisfiability checking, property chains
+or negation, none of which a product catalogue needs. See [The upper layers](#the-upper-layers) below.
 
 ---
 
@@ -209,6 +210,14 @@ skip when the file is absent (as in CI).
 | `GET` | `/api/product/{id}/similar` | Nearest products by stored embedding (works with the encoder down) |
 | `POST` | `/api/click` | Record that a result was opened (`{query, product_id}`). With `CLICK_BOOST_WEIGHT` > 0 these clicks nudge popular products up the semantic ranking (global popularity, not per-user; reported scores are unchanged) |
 | `POST/PUT/DELETE` | `/api/admin/products[/{id}]` | Add / update / delete a product and re-embed it. **Only mounted when `ADMIN_TOKEN` is set**; send it as `X-Admin-Token` |
+| `GET` | `/api/ontology` | The OWL ontology: JSON summary, or Turtle / RDF-XML / JSON-LD by `Accept` or `?format=` |
+| `GET` | `/api/ontology/validate` | Entail the whole catalogue and check it against the ontology: conformance, inferred-triple counts, violations |
+| `GET` | `/api/product/{id}/inferences` | What follows from this product plus the ontology (JSON, or RDF of asserted + inferred) |
+| `GET` | `/api/product/{id}/proof` | A proof tree for every inferred fact about the product |
+| `GET` | `/api/product/{id}/provenance` | PROV-O provenance plus a signed digest (`X-Content-Digest` / `X-Content-Signature` in RDF mode) |
+| `POST` | `/api/verify` | `{turtle, signature, product_id?}`: is this graph exactly what was signed, and does it still match the catalogue? |
+| `GET` | `/api/trust/calibration` | Measured precision of results by similarity score |
+| `GET` | `/api/logic/rules` | The rules the reasoner applies |
 | `GET` | `/health` | Component state: database and embedding model (503 only if the database is down) |
 
 ### Linked Data
@@ -232,6 +241,31 @@ curl -H 'Accept: text/turtle' http://localhost:8000/api/product/<uuid>
 | `limit` / `offset` | `int` | Pagination (limit default 20, max 100) |
 
 ---
+
+## The upper layers
+
+**Ontology.** `app/semantics/ontology.py` builds the OWL document from the `categories` table plus a small table of
+properties, restrictions and defined classes. A defined class is stored the OWL way, for example
+`cat:Premium owl:equivalentClass [ owl:intersectionOf ( schema:Product [ owl:onProperty schema:offers; owl:someValuesFrom [ owl:onProperty schema:price; owl:someValuesFrom [ owl:onDatatype xsd:decimal; owl:withRestrictions ( [ xsd:minInclusive 200.0 ] ) ] ] ] ) ]`,
+and the reasoner reads it back from the graph, so the document and the behaviour cannot drift apart.
+
+**Logic.** `app/semantics/reasoner.py` applies `scm-sco`, `cax-sco`, `prp-dom`, `prp-rng`, `prp-inv` and `cls-def` until
+nothing new follows, and checks `cax-dw` (disjoint classes), `cls-card`, `dt-range`, `dt-bound`, `cls-decl`. Membership of
+`TopRated`, `Premium` and `InStockProduct` is inferred, never stored. The test suite checks the closure against an
+independent SPARQL property-path oracle.
+
+**Proof.** Each derived triple records its rule and premises, so `app/semantics/proof.py` can unfold it into a tree whose
+leaves are catalogue rows or ontology axioms. A fact the reasoner did not derive has no proof.
+
+**Trust** answers three different questions with three mechanisms:
+
+| Question | Mechanism |
+|---|---|
+| Where did it come from? | PROV-O graph: the entity, the mapping activity and agent, and a reified statement for each inference naming its rule |
+| How much should I believe it? | Asserted rows and deductive inferences are certain *relative to the catalogue*. The only probabilistic claim, "this matches your query", gets its confidence from `eval/calibration.json`: measured precision per similarity bin (`python -m eval.calibrate`), smoothed to be monotone. It is a lower bound, since only labelled products count as relevant |
+| Has it been altered? | SHA-256 over the canonical (blank-node-relabelled) N-Triples, signed with HMAC-SHA256. Set `TRUST_KEY`; without it a public development key is used and the response says so |
+
+Re-run `python -m eval.calibrate` whenever the model, the catalogue or the labels change.
 
 ## How a row becomes a graph
 
@@ -283,6 +317,8 @@ ranked resources, each with a proof trace
 │   │   ├── config.py                  # settings from .env
 │   │   ├── api/search.py              # search routes, click logging, TTL cache
 │   │   ├── api/products.py            # /product/{id}: content negotiation, similar
+│   │   ├── api/semantics.py           # ontology, inferences, proofs, provenance, verify
+│   │   ├── semantics/                 # ontology.py, reasoner.py, proof.py, trust.py
 │   │   ├── api/admin.py               # product CRUD (mounted only if ADMIN_TOKEN set)
 │   │   ├── db/session.py              # async SQLAlchemy session
 │   │   ├── models/
@@ -335,6 +371,7 @@ USE_LOCAL_DB=false                       # true = SQLite file instead of Postgre
 # CLICK_BOOST_WEIGHT=0.1                 # re-rank by click popularity; 0 (default) = off
 BASE_URI=http://example.org/catalog/     # set to http://localhost:8000/api/ for dereferenceable URIs
 # ADMIN_TOKEN=change-me                  # set to mount /api/admin/*; leave unset to disable
+# TRUST_KEY=long-random-string           # signs product graphs (HMAC-SHA256); falls back to ADMIN_TOKEN, then a public dev key
 ```
 
 Frontend (`frontend/.env`, optional): `VITE_API_BASE` and `VITE_BASE_URI` (must equal `BASE_URI`).

@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.search import router as search_router
 from app.api.products import router as products_router
+from app.api.semantics import router as semantics_router
 from app.config import get_settings
 from app.db.session import async_session
 
@@ -65,6 +66,7 @@ app.add_middleware(
 # Include API routes
 app.include_router(search_router)
 app.include_router(products_router)
+app.include_router(semantics_router)
 
 # Write endpoints exist only when an admin token is configured.
 if settings.admin_token:

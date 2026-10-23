@@ -11,8 +11,8 @@
 /* ============================================================
    THE LAYER CAKE  (Unit 1)
    Bottom-to-top, as in Berners-Lee's stack diagram. `state` records
-   how far this particular application actually climbs — the upper
-   layers are honestly marked as partial rather than claimed.
+   how far this particular application actually climbs. Each layer states
+   its scope, including where it stops short of the full standard.
    ============================================================ */
 
 export const LAYER_CAKE = [
@@ -43,26 +43,26 @@ export const LAYER_CAKE = [
   {
     layer: "Ontology (OWL)",
     role: "Richer axioms and constraints",
-    here: "Object/datatype properties with declared ranges; the class tree is browsable.",
-    state: "partial",
+    here: "A real OWL ontology at /api/ontology: class hierarchy, disjointness, domain/range, an inverse property, cardinality restrictions, and defined classes (TopRated, Premium, InStockProduct) stated as owl:equivalentClass. OWL 2 RL style, not OWL DL.",
+    state: "full",
   },
   {
     layer: "Logic",
     role: "Rules and entailment",
-    here: "Subclass entailment is applied when filtering; deeper inference is not implemented.",
-    state: "partial",
+    here: "A forward-chaining reasoner applies six RDFS/OWL-RL rules (subclass, domain, range, inverse, defined classes) to every product, and five checks (disjointness, cardinality, datatype, bounds, declared classes) validate the whole catalogue.",
+    state: "full",
   },
   {
     layer: "Proof",
     role: "Explaining why an answer holds",
-    here: "Each result carries an explanation trace: matched class, score, and the step that produced it.",
-    state: "partial",
+    here: "Every inferred fact carries a proof tree: the rule, its premises, and down to the catalogue rows and ontology axioms it rests on. Open Reasoning on any result.",
+    state: "full",
   },
   {
     layer: "Trust",
     role: "Deciding whether to believe it",
-    here: "Provenance and a confidence band are attached to every assertion (Unit 3).",
-    state: "partial",
+    here: "PROV-O provenance for every product and inference; match confidence measured against the labelled evaluation, not assumed; and an HMAC-signed digest of each graph that detects a single altered triple.",
+    state: "full",
   },
 ];
 
@@ -188,6 +188,22 @@ export function trustBand(score, mode) {
     label: "Weak belief",
     level: "weak",
     basis: `Cosine similarity ${score.toFixed(3)} — below ${BELIEF_THRESHOLDS.moderate}; distant in vector space, so treat as a peripheral suggestion.`,
+  };
+}
+
+/**
+ * The measured precision of results at this similarity score, from the
+ * calibration the backend computed over the labelled queries (eval/calibrate.py).
+ * Mirrors trust.calibrated_confidence in the API. Null when nothing is loaded.
+ */
+export function measuredConfidence(score, calibration) {
+  if (score == null || !calibration?.bins) return null;
+  const bin = calibration.bins.find((b) => score >= b.lo && (score < b.hi || b.hi >= 1));
+  if (!bin || !bin.n) return null;
+  return {
+    precision: bin.precision,
+    n: bin.n,
+    text: `${Math.round(bin.precision * 100)}% of ${bin.n} labelled results scoring ${bin.lo.toFixed(2)}–${bin.hi.toFixed(2)} were relevant`,
   };
 }
 

@@ -16,7 +16,11 @@ README), open http://localhost:5173, and have `backend/eval/RESULTS.md` ready.
 ## 2. Every result is a resource: *Unit 1, RDF*
 1. Note the card is announced by its **URI**, not its name.
 2. Expand **Triples**, then **Graph**: the same description as a table and as a node-link picture.
-3. Expand **Why this?**: the proof trace, labelled as partial.
+3. Expand **Why this?**: the proof trace, with the *measured* precision at that score.
+4. Expand **Reasoning**: the facts the reasoner derived (a laptop is *Electronics*; this one is *Premium* because
+   899.99 ≥ 200). Open one to see its proof tree, grounded in a catalogue row and an ontology axiom.
+5. In the same panel click **Verify this graph**, then **Change the price to $0.01 and verify**: one altered triple
+   breaks the signature. Open **Inspect → Logic** to show the ontology, the rules and the whole-catalogue conformance check.
 
 ## 3. The class tree is the filter: *Unit 2, ontologies*
 1. In the left rail click **Electronics**. Laptops, smartphones and audio all appear.

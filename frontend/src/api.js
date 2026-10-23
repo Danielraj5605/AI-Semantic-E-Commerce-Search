@@ -86,3 +86,36 @@ export function recordClick(query, productId) {
     keepalive: true,
   }).catch(() => {});
 }
+
+/* ---- Upper layers: ontology, logic, proof, trust ---------------------- */
+
+async function getJSON(path, what) {
+  const res = await fetch(`${API_BASE}${path}`);
+  if (!res.ok) throw new Error(`${what} failed: ${res.status}`);
+  return res.json();
+}
+
+export const getOntology = () => getJSON("/ontology", "Ontology");
+export const getValidation = () => getJSON("/ontology/validate", "Validation");
+export const getRules = () => getJSON("/logic/rules", "Rules");
+export const getInferences = (id) => getJSON(`/product/${id}/inferences`, "Inferences");
+export const getProof = (id) => getJSON(`/product/${id}/proof`, "Proof");
+export const getProvenance = (id) => getJSON(`/product/${id}/provenance`, "Provenance");
+export const ontologyUrl = (format) => `${API_BASE}/ontology?format=${format}`;
+
+export async function verifyGraph(turtle, signature, productId) {
+  const res = await fetch(`${API_BASE}/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ turtle, signature, product_id: productId }),
+  });
+  if (!res.ok) throw new Error(`Verify failed: ${res.status}`);
+  return res.json();
+}
+
+// Fetched once per page load; null when the backend has no calibration file.
+let calibrationPromise = null;
+export function getCalibration() {
+  calibrationPromise ??= getJSON("/trust/calibration", "Calibration").catch(() => null);
+  return calibrationPromise;
+}

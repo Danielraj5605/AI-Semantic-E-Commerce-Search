@@ -1,0 +1,50 @@
+{
+  "model": "all-MiniLM-L6-v2",
+  "min_similarity": 0.25,
+  "queries": 33,
+  "results": 163,
+  "method": "precision of returned results by similarity bin, monotone-smoothed (PAV)",
+  "caveat": "lower bound: unlabelled results count as not relevant; labels are a first pass",
+  "bins": [
+    {
+      "lo": 0.25,
+      "hi": 0.32,
+      "relevant": 10,
+      "n": 82,
+      "precision": 0.122,
+      "raw_precision": 0.122
+    },
+    {
+      "lo": 0.32,
+      "hi": 0.4,
+      "relevant": 9,
+      "n": 34,
+      "precision": 0.207,
+      "raw_precision": 0.265
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.5,
+      "relevant": 3,
+      "n": 24,
+      "precision": 0.207,
+      "raw_precision": 0.125
+    },
+    {
+      "lo": 0.5,
+      "hi": 0.6,
+      "relevant": 7,
+      "n": 10,
+      "precision": 0.7,
+      "raw_precision": 0.7
+    },
+    {
+      "lo": 0.6,
+      "hi": 1.0,
+      "relevant": 13,
+      "n": 13,
+      "precision": 1.0,
+      "raw_precision": 1.0
+    }
+  ]
+}

@@ -70,8 +70,8 @@ export default function ConceptsDrawer({ open, onClose }) {
             <p className="panel__lede">
               Read bottom-up: each layer can only mean something because the one beneath it
               already settled identity, then syntax, then statements, then vocabulary. The
-              upper three layers are where most working systems, including this one, stop
-              short — so they are labelled honestly.
+              upper layers are where most working systems stop short, so each one states its
+              scope: this reasoner is rule-based (OWL 2 RL style), not a full OWL DL prover.
             </p>
             <LayerCakeStack />
           </section>
@@ -89,7 +89,9 @@ export default function ConceptsDrawer({ open, onClose }) {
             <p className="panel__prose">
               Ranking here is done by <em>vector similarity</em>, not by logical entailment.
               That is statistical semantics, not the formal semantics of RDF and OWL — the two
-              share a word and very little else. What this application shows is the pairing:
+              share a word and very little else. The logic, proof and trust layers apply to
+              the catalogue&rsquo;s facts; the match confidence is the one statistical claim,
+              and it is measured rather than assumed. What this application shows is the pairing:
               the catalogue is published as a graph with real vocabularies, identity and
               provenance, and the retrieval step is treated as an external service invocation
               (Unit 3) that the graph records the result of. Where a fact is asserted, it says

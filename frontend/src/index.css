@@ -2142,3 +2142,37 @@ pre {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---- Reasoning, proof trees, provenance, logic panel ------------------ */
+.reasoning__sum { margin: 0 0 12px; color: var(--ink-2); font-size: 0.9rem; }
+.reasoning__rules { color: var(--ink-3); }
+.reasoning__h { margin: 18px 0 8px; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.reasoning__violations { margin: 8px 0; padding-left: 18px; color: var(--bad); font-size: 0.85rem; }
+.infer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.infer { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; }
+.infer__head { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 8px 10px; cursor: pointer; }
+.infer__head:focus-visible { outline: 2px solid var(--accent); border-radius: 8px; }
+.infer__caret { color: var(--accent-2); grid-row: span 2; }
+.infer__stmt { color: var(--ink); font-size: 0.82rem; overflow-wrap: anywhere; }
+.infer__meta { color: var(--ink-3); font-size: 0.74rem; }
+.ptree { list-style: none; margin: 4px 0 0; padding-left: 16px; border-left: 1px solid var(--line-2); }
+.ptree--root { margin: 0 10px 10px 18px; }
+.ptree__node { margin: 6px 0; }
+.ptree__line { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.ptree__stmt { font-size: 0.78rem; color: var(--ink); overflow-wrap: anywhere; }
+.ptree__rule { font-size: 0.72rem; color: var(--accent-2); background: var(--accent-soft); padding: 1px 7px; border-radius: 99px; }
+.ptree__leaf { font-size: 0.72rem; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--ink-3); }
+.ptree__leaf--asserted { color: var(--good); border-color: var(--good); }
+.ptree__leaf--axiom { color: var(--uri); border-color: var(--uri); }
+.prov__facts { display: grid; gap: 8px; margin: 0 0 10px; }
+.prov__facts dt { font-size: 0.72rem; color: var(--ink-3); }
+.prov__facts dd { margin: 2px 0 0; font-size: 0.82rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.prov__actions { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.prov__result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: 0.86rem; }
+.prov__result--ok { color: var(--good); border: 1px solid var(--good); }
+.prov__result--bad { color: var(--bad); border: 1px solid var(--bad); }
+.verdict { margin: 0 0 14px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 0.9rem; }
+.verdict--ok { border-color: var(--good); }
+.verdict--ok strong { color: var(--good); }
+.verdict--bad { border-color: var(--bad); }
+.verdict--bad strong { color: var(--bad); }

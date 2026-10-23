@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { productToTriples, productURI, categoryURI } from "../rdf";
-import { trustBand, proofSteps } from "../concepts";
+import { trustBand, proofSteps, measuredConfidence } from "../concepts";
+import Reasoning from "./Reasoning";
 import { ResourceGraph } from "./GraphView";
 import Term from "./Term";
-import { recordClick } from "../api";
+import { recordClick, getCalibration } from "../api";
 
 /**
  * A result is presented as a *resource*, not a product tile: it is announced by
@@ -38,6 +39,11 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
     [triples, product]
   );
   const trust = trustBand(score, mode);
+  const [calibration, setCalibration] = useState(null);
+  useEffect(() => {
+    getCalibration().then(setCalibration);
+  }, []);
+  const measured = mode === "semantic" ? measuredConfidence(score, calibration) : null;
   const proof = useMemo(() => proofSteps(result, query, mode), [result, query, mode]);
 
   const clicked = useRef(false);
@@ -58,7 +64,7 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
         <code className="res__uri-text" title={productURI(product)}>
           {productURI(product)}
         </code>
-        <span className={`belief belief--${trust.level}`} title={trust.basis}>
+        <span className={`belief belief--${trust.level}`} title={measured ? `${trust.basis} ${measured.text}.` : trust.basis}>
           {trust.label}
           {score != null && mode === "semantic" && (
             <span className="belief__score">{score.toFixed(3)}</span>
@@ -138,6 +144,9 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
         <button className={tab === "proof" ? "is-on" : ""} onClick={() => toggle("proof")}>
           Why this?
         </button>
+        <button className={tab === "reasoning" ? "is-on" : ""} onClick={() => toggle("reasoning")}>
+          Reasoning
+        </button>
         {onSimilar && mode !== "keyword" && (
           <button onClick={() => onSimilar(product)} title="Products nearest to this one by embedding">
             Similar ↗
@@ -196,6 +205,16 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
           <p className="res__panel-note">
             <strong>Belief:</strong> {trust.basis}
           </p>
+          {measured && (
+            <p className="res__panel-note">
+              <strong>Measured:</strong> {measured.text}. A lower bound — unlabelled good matches count as misses.
+            </p>
+          )}
+        </div>
+      )}
+      {tab === "reasoning" && (
+        <div className="res__panel">
+          <Reasoning productId={product.product_id} />
         </div>
       )}
     </article>

@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     # Admin write endpoints are mounted only when a token is set. Empty = disabled.
     admin_token: str = ""
 
+    # Key for signing product graphs (HMAC-SHA256). Falls back to ADMIN_TOKEN, then to
+    # a public development key; the provenance response says which one was used.
+    trust_key: str = ""
+
     # CORS
     frontend_url: str = "http://localhost:5173"
 

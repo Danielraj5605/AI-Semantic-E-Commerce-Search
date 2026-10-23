@@ -298,7 +298,9 @@ A similarity score is not a truth value, and the UI refuses to present it as one
 
 Each result also yields a **proof trace**: query lifted → service invoked → similarity computed →
 class entailed → provenance recorded. This is as far up the proof layer as an embedding-based system
-can honestly climb, and the UI labels it as partial.
+can honestly climb for the *retrieval* step. The upper layers were later implemented for the catalogue's
+facts (section 10): an OWL ontology, a rule-based reasoner, proof trees and signed provenance; the
+confidence band is now backed by measured precision (`eval/calibration.json`) rather than fixed cut-offs.
 
 ---
 
@@ -467,7 +469,7 @@ Written after the build, so the plan above can be read against what actually exi
 | FR7 find similar | Done |
 | FR8 personalised ranking | **Partly done.** Clicks are logged (`POST /api/click`) and can re-rank results by global click popularity (`CLICK_BOOST_WEIGHT`, off by default). It is *not* per-user: the app has no accounts, so there is no one to personalise for. Not evaluated, since the labelled queries have no click history |
 | FR9 dereferenceable URIs | Done when `BASE_URI` points at the API; the default stays `example.org` |
-| FR10-FR18 | Done (Logic, Proof and Trust layers remain partial, and are labelled so) |
+| FR10-FR18 | Done (Ontology, Logic, Proof and Trust implemented: OWL 2 RL style reasoner, proof trees, PROV-O, signed digests) |
 
 **Changes made while building, and why**
 

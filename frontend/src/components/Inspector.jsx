@@ -11,6 +11,7 @@ import {
   buildClassTree,
   ontologyAxioms,
 } from "../rdf";
+import LogicPanel from "./LogicPanel";
 
 /**
  * The inspector is where the answer stops being a page of products and becomes
@@ -30,6 +31,7 @@ const TABS = [
   { id: "sparql", label: "SPARQL", hint: "the equivalent query" },
   { id: "mapping", label: "Mapping", hint: "relational → RDF" },
   { id: "axioms", label: "Axioms", hint: "the local ontology" },
+  { id: "logic", label: "Logic", hint: "OWL, rules and validation" },
   { id: "prefixes", label: "Prefixes", hint: "vocabularies in use" },
 ];
 
@@ -157,6 +159,8 @@ export default function Inspector({ open, onClose, results, query, filters, mode
             </table>
           </>
         );
+      case "logic":
+        return <LogicPanel />;
       case "prefixes":
       default:
         return (
