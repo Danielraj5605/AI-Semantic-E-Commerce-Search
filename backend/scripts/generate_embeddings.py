@@ -104,6 +104,12 @@ def generate_embeddings():
         session.commit()
         print(f"   Stored {len(embeddings)} embeddings in {time.time() - start:.1f}s")
 
+        if settings.is_sqlite:
+            # No pgvector locally: no index, and the validation below is pgvector SQL.
+            print("\nLocal SQLite database: skipping index creation and SQL validation.")
+            engine.dispose()
+            return
+
         # Create IVFFlat index for fast similarity search
         print("\n6. Creating similarity search index...")
         # For small datasets, we need at least sqrt(n) lists

@@ -76,3 +76,4 @@ data/*.sqlite
 *.sln
 .DS_Store
 Thumbs.db
+backend/catalogue.db

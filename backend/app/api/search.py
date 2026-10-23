@@ -46,6 +46,11 @@ async def search(
     min_price: Optional[float] = Query(None, ge=0),
     max_price: Optional[float] = Query(None, ge=0),
     min_rating: Optional[float] = Query(None, ge=0, le=5),
+    min_similarity: Optional[float] = Query(
+        None, ge=0, le=1,
+        description="Relevance floor; below this a product is not a result at all. "
+                    "Defaults to settings.min_similarity; pass 0 for the raw ranking.",
+    ),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -54,7 +59,8 @@ async def search(
     cache_key = _cache_key(
         q, category=category, brand=brand,
         min_price=min_price, max_price=max_price,
-        min_rating=min_rating, limit=limit, offset=offset,
+        min_rating=min_rating, min_similarity=min_similarity,
+        limit=limit, offset=offset,
     )
 
     # Check cache
@@ -68,7 +74,7 @@ async def search(
             limit=limit, offset=offset,
             category=category, brand=brand,
             min_price=min_price, max_price=max_price,
-            min_rating=min_rating,
+            min_rating=min_rating, min_similarity=min_similarity,
         )
         search_type = "semantic"
     except Exception as e:

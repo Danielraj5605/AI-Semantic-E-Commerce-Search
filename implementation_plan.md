@@ -1,43 +1,90 @@
-# AI Semantic E-Commerce Search — Implementation Plan
+# CatalogueGraph — Implementation Plan
+
+**21CSE452T · Semantic Web** — Professional Elective, School of Computing
+*A product catalogue published as RDF, retrieved by meaning.*
+
+---
 
 ## 1. Project Overview
 
-Traditional e-commerce search engines rely on **keyword matching** — they compare the literal words in a search query against the literal words in product titles and descriptions. This approach fails often: a search for "warm winter jacket for men" may completely miss a product titled "insulated men's parka," even though the two mean almost the same thing, because the words don't overlap.
+Traditional e-commerce search relies on **keyword matching** — comparing the literal words of a query
+against the literal words of a product title. It fails often: "warm winter jacket for men" misses a
+product titled "insulated men's parka" entirely, because the words do not overlap even though the
+meanings almost coincide.
 
-**Semantic search** solves this by understanding *meaning* rather than exact words. It works by converting both product data and user queries into **embeddings** — numerical vectors that represent meaning in a high-dimensional space. Two pieces of text that mean similar things end up close together in this space, even if they share no common words. The system then retrieves products by measuring the similarity between the query vector and product vectors, rather than by string matching.
+Two different traditions answer that problem, and this project builds both and puts them next to each
+other:
 
-In short, this project is a search engine for a product catalog that:
-1. Converts every product's text (name, description, category, brand) into a vector embedding.
-2. Converts the user's search query into a vector embedding using the same model.
-3. Finds and ranks products whose embeddings are closest (most semantically similar) to the query embedding.
-4. Combines this with traditional filters (price, category, brand) to give practical, usable results.
+**Statistical semantics.** Convert product text and query text into **embeddings** — vectors that
+place similar meanings close together in a high-dimensional space — and retrieve by distance. This is
+what `sentence-transformers` does. It is powerful, approximate, and entirely opaque: the model cannot
+tell you *why* two things are close.
+
+**Formal semantics.** Publish the catalogue as **RDF** over shared vocabularies, so every product has
+a URI, is typed against an ontology, describes itself in terms other systems already understand, and
+carries provenance for its claims. This is the Semantic Web proper — the subject of this course. It is
+precise, inspectable, and says nothing at all about whether "parka" is like "jacket" unless somebody
+asserted it.
+
+> **The thesis of this project.** The two are complementary, not competing. The graph supplies
+> identity, structure, vocabulary and provenance; the vector service supplies the similarity judgment
+> that no ontology contains. Treating retrieval as a **service invocation** (Unit 3) whose result the
+> graph *records* — rather than pretending the model is doing inference — keeps both honest. The
+> interface is built to make that distinction visible on every screen.
+
+Concretely, the system:
+
+1. Stores the catalogue relationally in PostgreSQL.
+2. Encodes every product's text into a 384-dimension vector, stored alongside it via `pgvector`.
+3. Encodes the user's query with the same model and retrieves the nearest products.
+4. **Lifts every row and result into RDF at render time** — URIs, `rdf:type`, schema.org properties,
+   typed literals, provenance — and serialises it as Turtle, RDF/XML or JSON-LD on demand.
+5. Presents each result with a stated **degree of belief** and a **proof trace**, rather than an
+   unexplained score.
 
 ---
 
 ## 2. Requirements
 
-### 2.1 Functional Requirements
+### 2.1 Functional — retrieval
 
 | ID | Requirement |
 |----|-------------|
-| FR1 | Users can search using natural language queries (e.g., "comfortable running shoes for flat feet") |
+| FR1 | Users can search using natural-language queries ("comfortable running shoes for flat feet") |
 | FR2 | System returns semantically relevant products, ranked by relevance score |
-| FR3 | Users can filter results by category, price range, brand, and rating |
+| FR3 | Users can filter by category, price range, brand and rating |
 | FR4 | System supports autocomplete / query suggestions while typing |
-| FR5 | Admins can add, update, or delete products; embeddings regenerate automatically on change |
-| FR6 | System falls back to keyword search if the embedding/vector service is unavailable |
-| FR7 | (Optional) "Find similar products" feature based on a selected product's embedding |
-| FR8 | (Optional) Personalized ranking based on a user's past search/click history |
+| FR5 | Admins can add, update or delete products; embeddings regenerate on change |
+| FR6 | System falls back to keyword search if the embedding service is unavailable |
+| FR7 | *(Optional)* "Find similar products" from a selected product's embedding |
+| FR8 | *(Optional)* Personalised ranking from a user's search/click history |
 
-### 2.2 Non-Functional Requirements
+### 2.2 Functional — semantic publication
+
+| ID | Requirement | Unit |
+|----|-------------|------|
+| FR9 | Every product, brand and category is identified by a dereferenceable URI | 1 |
+| FR10 | Catalogue rows are mapped to RDF triples over reused vocabularies (schema.org, DC, PROV-O) — no invented term where a standard one exists | 1, 4 |
+| FR11 | Categories are published as an `owl:Class` hierarchy linked by `rdfs:subClassOf`, and are browsable as an ontology | 2 |
+| FR12 | The result graph is serialisable to Turtle, RDF/XML and JSON-LD, and the output must actually parse | 5 |
+| FR13 | The equivalent SPARQL query is displayed for whatever the user asked through the UI | 5 |
+| FR14 | Result pages embed JSON-LD in the document head, so the page is machine-readable to crawlers | 1, 5 |
+| FR15 | The retrieval step is described as an invoked service, with its binding and method stated | 3 |
+| FR16 | Every result carries provenance (`prov:wasDerivedFrom`) and an explicit degree of belief | 3 |
+| FR17 | Every result can produce a proof trace — the ordered steps that caused it to be returned | 1 |
+| FR18 | The interface distinguishes what is **asserted** from what is **believed**, and never presents a similarity score as a fact about the product | 1, 3 |
+
+### 2.3 Non-functional
 
 | ID | Requirement |
 |----|-------------|
-| NFR1 | Search latency should stay under ~500ms for a typical query |
-| NFR2 | System should scale to a catalog of at least tens of thousands of products without major redesign |
-| NFR3 | Semantic matching should be reasonably accurate (validated via evaluation, see Section 6) |
-| NFR4 | System should degrade gracefully — no hard failure if AI components go down |
-| NFR5 | Codebase should be modular so the embedding model or vector DB can be swapped later |
+| NFR1 | Search latency under ~500 ms for a typical query |
+| NFR2 | Scales to tens of thousands of products without redesign |
+| NFR3 | Semantic matching validated by evaluation (Section 8) |
+| NFR4 | Degrades gracefully — no hard failure if AI components go down |
+| NFR5 | Modular enough that the embedding model or vector store can be swapped |
+| NFR6 | The RDF view is derived, never stored — it cannot drift from the relational source |
+| NFR7 | UI is theme-aware (light/dark), keyboard-navigable, and legible at 400 px width |
 
 ---
 
@@ -45,53 +92,68 @@ In short, this project is a search engine for a product catalog that:
 
 | Layer | Technology | Reasoning |
 |-------|------------|-----------|
-| Frontend | React (Vite) | Fast dev experience, component-based UI, good fit for dynamic search results |
-| Backend API | FastAPI (Python) | Native compatibility with ML/embedding libraries; async support for low latency |
-| Embedding Model | Sentence-Transformers (`all-MiniLM-L6-v2`) | Free, runs locally, no API cost, good semantic accuracy for its size (384 dimensions) |
-| Vector Storage | PostgreSQL + `pgvector` extension | Keeps structured and vector data in one database; simpler than running a separate vector DB; supports cosine similarity search with indexing |
-| Primary Database | PostgreSQL | Reliable relational store for products, users, categories, logs |
-| Caching | Redis | Caches frequent/repeated queries to reduce latency and load |
-| Containerization | Docker + docker-compose | Reproducible environment, easy to run all services together |
+| Frontend | React 19 (Vite) | Component model suits the result/inspector/rail split; no CSS framework, so the design system stays small and owned |
+| RDF layer | Hand-written (`src/rdf.js`) | ~450 lines. A library would hide precisely the machinery the course is about; writing the serialisers is the exercise |
+| Vocabularies | schema.org, RDF/RDFS, OWL, XSD, DC Terms, FOAF, PROV-O | Unit 4 is explicit that reusing existing ontologies beats authoring new ones. Only `cat:` and `ex:` are local |
+| Backend API | FastAPI (Python) | Native compatibility with the embedding libraries; async for low latency |
+| Embedding model | `all-MiniLM-L6-v2` | Free, local, no API cost, good accuracy for 384 dimensions |
+| Vector storage | PostgreSQL + `pgvector` | Structured and vector data in one store; cosine similarity with indexing |
+| Primary database | PostgreSQL | Relational store for products, categories, users, logs |
+| Caching | TTL cache (in-memory), Redis at scale | Avoids re-encoding repeated queries |
+| Containerisation | Docker + docker-compose | Reproducible; one command to start everything |
 
-**Why pgvector instead of a dedicated vector database (Pinecone/Weaviate/Qdrant):**
-Using pgvector keeps the entire system in a single database, avoiding the complexity of syncing two separate data stores. It is sufficient for catalogs up to a few hundred thousand products and is the most practical choice for a project of this scope. A dedicated vector DB can be swapped in later if scale demands it, since the vector logic is isolated to one service layer.
+**Why pgvector rather than Pinecone/Weaviate/Qdrant.** Keeping everything in one database avoids
+syncing two stores, and is sufficient to a few hundred thousand products. Because the vector logic is
+isolated to one service layer, a dedicated vector DB can replace it later without touching the rest.
+
+**Why no triple store.** The same argument, applied to RDF. Materialising the graph into a separate
+store would create a second copy to keep consistent, for no benefit at this scale. Instead the graph
+is a **view**, computed from the rows on demand — which is the direct-mapping approach of Unit 4, and
+satisfies NFR6 by construction.
 
 ---
 
 ## 4. System Architecture
 
 ```
-┌─────────────┐        ┌──────────────┐        ┌────────────────────┐
+┌──────────────┐        ┌───────────────┐        ┌─────────────────────┐
 │   Frontend   │──────▶│  Backend API  │──────▶│  Embedding Service  │
-│ (React)      │        │  (FastAPI)    │        │ (Sentence-BERT)     │
-└─────────────┘        └──────┬───────┘        └─────────┬──────────┘
-                               │                            │
-                               ▼                            ▼
-                    ┌─────────────────┐         ┌────────────────────┐
-                    │  PostgreSQL DB   │◀───────▶│  pgvector column    │
-                    │ (product details)│         │ (product_embeddings)│
-                    └─────────────────┘         └────────────────────┘
-                               │
-                               ▼
-                        ┌─────────────┐
-                        │   Redis      │  (query result cache)
-                        └─────────────┘
+│   (React)    │        │   (FastAPI)   │        │   (Sentence-BERT)   │
+│              │        └───────┬───────┘        └──────────┬──────────┘
+│  rdf.js      │                │                            │
+│  row → RDF   │                ▼                            ▼
+│  → Turtle    │      ┌──────────────────┐        ┌────────────────────┐
+│  → RDF/XML   │      │   PostgreSQL     │◀──────▶│ pgvector column    │
+│  → JSON-LD   │      │ (product detail) │        │(product_embeddings)│
+│  → SPARQL    │      └──────────────────┘        └────────────────────┘
+└──────────────┘                │
+                                ▼
+                         ┌─────────────┐
+                         │    Redis    │  (query result cache)
+                         └─────────────┘
 ```
 
-### 4.1 Data Flow — Ingestion (offline/batch)
-1. A product is created or updated in the `products` table.
-2. Its text fields (name, description, category, brand) are concatenated into one text blob.
-3. The embedding service encodes this text into a 384-dimension vector.
-4. The vector is stored in `product_embeddings`, linked to the product by `product_id`.
+The RDF transformation lives **client-side**, in the same process that renders the result. That is a
+deliberate choice: it demonstrates that publishing a graph is a matter of applying mapping rules to
+rows, not of adopting new infrastructure.
 
-### 4.2 Data Flow — Query Time
-1. User submits a search query from the frontend.
-2. Backend encodes the query into a vector using the same embedding model.
-3. Backend runs a similarity search (cosine similarity via pgvector's `<=>` operator) against `product_embeddings`, retrieving the top-N closest products.
-4. Backend joins these results with the `products` table for full details.
-5. Any active filters (price, category, brand) are applied.
-6. Results are ranked and returned as JSON to the frontend.
-7. (Optional) A hybrid score combines semantic similarity with a traditional keyword match score for better precision on exact-match queries (e.g., brand names, model numbers).
+### 4.1 Data flow — ingestion (offline/batch)
+
+1. A product is created or updated in `products`.
+2. Its text fields (name, description, category, brand) are concatenated into one blob.
+3. The embedding service encodes the blob into a 384-dimension vector.
+4. The vector is stored in `product_embeddings`, keyed by `product_id`.
+
+### 4.2 Data flow — query time
+
+1. The user submits a natural-language query.
+2. The backend encodes it into a vector with the same model.
+3. pgvector's `<=>` operator finds the top-N nearest `product_embeddings`.
+4. Results are joined back to `products` for full detail.
+5. Class and literal constraints are applied.
+6. Ranked results return as JSON.
+7. **The frontend lifts each result into RDF**, attaches a belief band and a proof trace, and embeds
+   the result set as JSON-LD in the document head.
 
 ---
 
@@ -100,23 +162,22 @@ Using pgvector keeps the entire system in a single database, avoiding the comple
 ### 5.1 `products`
 | Column | Type | Notes |
 |--------|------|-------|
-| product_id | UUID / SERIAL (PK) | |
+| product_id | UUID (PK) | Becomes the RDF subject URI |
 | name | TEXT | |
 | description | TEXT | |
-| category_id | INT (FK → categories) | |
-| brand | VARCHAR | |
+| category_id | INT (FK → categories) | Resolves to an `owl:Class` |
+| brand | VARCHAR | Lifted to its own `schema:Brand` resource |
 | price | DECIMAL | |
 | stock_quantity | INT | |
 | rating_avg | FLOAT | |
-| created_at | TIMESTAMP | |
-| updated_at | TIMESTAMP | |
+| created_at / updated_at | TIMESTAMP | |
 
 ### 5.2 `categories`
-| Column | Type |
-|--------|------|
-| category_id | SERIAL (PK) |
-| name | VARCHAR |
-| parent_category_id | INT (self-referencing, nullable) |
+| Column | Type | Notes |
+|--------|------|-------|
+| category_id | SERIAL (PK) | |
+| name | VARCHAR | Becomes the class local name |
+| parent_category_id | INT (self-ref, nullable) | Becomes `rdfs:subClassOf` |
 
 ### 5.3 `product_images`
 | Column | Type |
@@ -134,7 +195,6 @@ Using pgvector keeps the entire system in a single database, avoiding the comple
 | password_hash | TEXT |
 
 ### 5.5 `search_logs`
-Used for analytics and for the evaluation phase.
 | Column | Type |
 |--------|------|
 | log_id | SERIAL (PK) |
@@ -146,107 +206,242 @@ Used for analytics and for the evaluation phase.
 ### 5.6 `product_embeddings`
 | Column | Type | Notes |
 |--------|------|-------|
-| product_id | FK → products | |
-| embedding | VECTOR(384) | Dimension depends on model; 384 for MiniLM |
-| model_version | VARCHAR | Tracks which embedding model generated the vector, useful if the model is upgraded later |
+| product_id | FK → products (PK) | |
+| embedding | VECTOR(384) | Dimension follows the model |
+| model_version | VARCHAR | Tracks which model produced the vector |
 
 ---
 
-## 6. Implementation Plan (by Phase)
+## 6. The Semantic Layer
+
+### 6.1 Namespaces (Unit 5)
+
+| Prefix | Namespace | Why it is here |
+|---|---|---|
+| `rdf:` | `http://www.w3.org/1999/02/22-rdf-syntax-ns#` | `rdf:type` asserts class membership |
+| `rdfs:` | `http://www.w3.org/2000/01/rdf-schema#` | `rdfs:subClassOf` builds the taxonomy |
+| `owl:` | `http://www.w3.org/2002/07/owl#` | Class and property declarations |
+| `xsd:` | `http://www.w3.org/2001/XMLSchema#` | Typed literals for price, rating, dates |
+| `schema:` | `http://schema.org/` | The de-facto shared e-commerce vocabulary |
+| `dcterms:` | `http://purl.org/dc/terms/` | Descriptive and provenance metadata |
+| `foaf:` | `http://xmlns.com/foaf/0.1/` | Agents and people (Unit 5 case study) |
+| `prov:` | `http://www.w3.org/ns/prov#` | Where each assertion came from |
+| `cat:` | `http://example.org/ontology/catalog#` | **Local** — catalogue classes and properties |
+| `ex:` | `http://example.org/catalog/` | **Local** — one URI per catalogue resource |
+
+Eight of ten are reused. That ratio is the point of Unit 4's "Reusing Existing Ontologies".
+
+### 6.2 Direct mapping rules (Unit 4)
+
+| Column | Predicate | Treatment |
+|---|---|---|
+| `products.product_id` | *(subject)* | Primary key becomes `ex:product/{uuid}` |
+| `products.name` | `schema:name` | Plain literal, `@en` |
+| `products.description` | `schema:description` | Plain literal, `@en` |
+| `products.brand` | `schema:brand` | Lifted into its own `schema:Brand` resource |
+| `products.category_id` | `schema:category` / `rdf:type` | FK resolved to an `owl:Class` |
+| `products.price` | `schema:offers` → `schema:price` | Reified as a `schema:Offer` node; `xsd:decimal` |
+| `products.stock_quantity` | `schema:offers` → `schema:availability` | `schema:InStock` / `schema:OutOfStock` |
+| `products.rating_avg` | `schema:aggregateRating` | Blank node of type `schema:AggregateRating` |
+| `products.image_url` | `schema:image` | Object is a URI reference, not a string |
+| `products.created_at` | `dcterms:created` | `xsd:dateTime` |
+| *(query result)* | `cat:similarityScore` | Query-scoped annotation, `xsd:double` |
+
+Two rules deserve comment. **Price and rating are reified** rather than attached as bare literals,
+because a price is a fact about an *offer* and a rating is a fact about an *aggregate*, not about the
+product itself — collapsing them would assert something false. And **`cat:similarityScore` is
+query-scoped**: it is only true relative to the query that produced it, which is why it is annotated
+rather than stored.
+
+### 6.3 The local ontology (Unit 2)
+
+```
+cat:CatalogueThing        a owl:Class .
+schema:Product            rdfs:subClassOf cat:CatalogueThing .
+cat:{Category}            a owl:Class ;
+                          rdfs:subClassOf cat:{ParentCategory} | cat:CatalogueThing .
+cat:similarityScore       a owl:DatatypeProperty ; rdfs:range xsd:double .
+schema:brand              a owl:ObjectProperty   ; rdfs:range schema:Brand .
+```
+
+Deliberately shallow — a terminology plus subsumption, which is the level most working vocabularies
+actually sit at ("Ontologies Today", Unit 2). Nothing is asserted that the source data does not
+support.
+
+### 6.4 Serialisation (Unit 5)
+
+Three concrete syntaxes over the same graph, generated live from the current result set:
+
+- **Turtle** — `@prefix` header limited to prefixes the graph actually uses; QNames that are not
+  legal `PN_LOCAL` (a UUID path contains `/`) are written as full IRIs so the output genuinely parses.
+- **RDF/XML** — `rdf:Description` per subject, `rdf:nodeID` for blank nodes, `rdf:datatype` and
+  `xml:lang` attributes on typed and tagged literals.
+- **JSON-LD** — built structurally rather than from the flat triple list, so the tree shape survives.
+  This is the form embedded in the document head.
+
+### 6.5 Query (Unit 5)
+
+The interface renders the **equivalent SPARQL** for whatever it was asked. Class selections become
+graph patterns; price and rating bounds become `FILTER` clauses; and the similarity step appears as a
+`SERVICE` block — which is the honest rendering, since no triple store computes cosine distance.
+
+### 6.6 Trust, belief and proof (Units 1, 3)
+
+A similarity score is not a truth value, and the UI refuses to present it as one:
+
+| Band | Condition | Meaning |
+|---|---|---|
+| Asserted | keyword mode | Literal match — certain, but blind to meaning |
+| Strong belief | score ≥ 0.65 | Query and product vectors closely aligned |
+| Moderate belief | 0.45 ≤ score < 0.65 | Related, but the match is not tight |
+| Weak belief | score < 0.45 | Distant — a peripheral suggestion |
+
+Each result also yields a **proof trace**: query lifted → service invoked → similarity computed →
+class entailed → provenance recorded. This is as far up the proof layer as an embedding-based system
+can honestly climb, and the UI labels it as partial.
+
+---
+
+## 7. Implementation Plan (by Phase)
 
 ### Phase 0 — Environment & Project Setup
-**Goal:** A running skeleton of the system, with no features yet.
-- Select a public product dataset (e.g., a Kaggle Amazon/Flipkart product dataset).
-- Set up the repository structure separating backend, frontend, embedding scripts, and database migrations.
-- Install and configure PostgreSQL with the `pgvector` extension enabled.
-- Set up the Python backend environment with FastAPI and the required libraries.
-- Scaffold the React frontend project.
+**Goal:** a running skeleton, no features.
+- Select a public product dataset (Kaggle Amazon/Flipkart).
+- Repository structure separating backend, frontend, scripts, migrations.
+- PostgreSQL with `pgvector` enabled.
+- FastAPI backend environment; React frontend scaffold.
 
-**Outcome:** Backend and frontend both run locally and can talk to a working database.
+**Outcome:** both tiers run locally and reach the database.
 
 ---
 
 ### Phase 1 — Database Design & Data Loading
-**Goal:** Real product data available in the database in a clean, queryable form.
-- Write and run migration scripts for all tables described in Section 5.
-- Enable the `vector` extension in PostgreSQL.
-- Write an ETL script to clean the source dataset and bulk-load it into `products` and `categories`.
-- Add indexes on commonly filtered columns (`category_id`, `price`, `brand`).
+**Goal:** clean, queryable product data.
+- Migration scripts for every table in Section 5; enable the `vector` extension.
+- ETL to clean the source dataset and bulk-load `products` and `categories`.
+- Indexes on `category_id`, `price`, `brand`, `rating_avg`.
+- **Ensure `categories.parent_category_id` is genuinely populated** — the class hierarchy of Phase 3
+  is only as deep as this column allows.
 
-**Outcome:** The database is populated with real, clean product data that can be queried with plain SQL.
+**Outcome:** real data, queryable with plain SQL.
 
 ---
 
 ### Phase 2 — Embedding Pipeline
-**Goal:** Every product in the catalog has a semantic vector representation.
-- Load the `all-MiniLM-L6-v2` embedding model.
-- Write a script that concatenates each product's relevant text fields and encodes them in batches.
-- Insert the resulting vectors into `product_embeddings`.
-- Create a similarity index (e.g., `ivfflat` with cosine distance) on the embedding column to keep lookups fast as the catalog grows.
-- Validate manually: pick a sample query, compute its embedding, run a raw similarity query, and confirm the top results make semantic sense.
+**Goal:** every product has a vector.
+- Load `all-MiniLM-L6-v2`; concatenate each product's text fields; encode in batches.
+- Insert vectors into `product_embeddings` with `model_version` recorded.
+- Create an `ivfflat` cosine index on the embedding column.
+- Validate manually: embed a sample query, run the raw similarity SQL, confirm the top results make
+  sense.
 
-**Outcome:** The entire product catalog is represented as vectors, with a verified similarity query working directly in SQL.
+**Outcome:** the catalogue is represented as vectors, verified directly in SQL.
 
 ---
 
 ### Phase 3 — Search API
-**Goal:** A backend endpoint that performs true semantic search.
-- Build a `/search` endpoint that accepts a query string plus optional filters (category, price range, brand).
-- Endpoint logic: encode the query → retrieve nearest-neighbor products from `product_embeddings` → join with `products` for full details → apply filters → return ranked, paginated results.
-- Build a `/search/keyword` fallback endpoint using plain SQL text matching, used both as a comparison baseline and as a fail-safe if the embedding service is unavailable.
-- (Optional) Implement hybrid scoring that blends semantic similarity with keyword match strength, improving results for queries that include exact brand names or model numbers.
-- Build a lightweight `/autocomplete` endpoint for query suggestions.
+**Goal:** a backend endpoint doing true semantic search.
+- `/api/search` — query string plus optional filters; encode → nearest neighbours → join → filter →
+  ranked, paginated results.
+- `/api/search/keyword` — SQL text matching, as both comparison baseline and fail-safe (FR6).
+- `/api/filters` — categories with their parent links, brands, price range. This endpoint is the raw
+  material the frontend turns into a class hierarchy, so the parent links matter.
+- `/api/autocomplete` — prefix suggestions.
+- *(Optional)* hybrid scoring blending semantic similarity with keyword match strength, for queries
+  containing exact brand names or model numbers.
 
-**Outcome:** A working, testable search API returning semantically ranked products.
-
----
-
-### Phase 4 — Frontend
-**Goal:** A usable interface for end users to interact with the search system.
-- Build a debounced search bar (avoids firing a request on every keystroke).
-- Build a results grid showing product image, name, price, and rating.
-- Build a filter sidebar (category, price range, brand).
-- Add loading and empty/no-results states.
-- (Optional) Add a side-by-side toggle comparing semantic search results against keyword search results — useful for demonstrating the project's value.
-
-**Outcome:** A complete, working end-to-end demo — a user can type a natural-language query and see relevant results.
+**Outcome:** a working, testable search API.
 
 ---
 
-### Phase 5 — Performance & Reliability
-**Goal:** Make the system fast, resilient, and deployable.
-- Add Redis caching for repeated/frequent search queries.
-- Log every search to `search_logs` for analytics and evaluation.
-- Add basic error handling: empty queries, database downtime, and embedding-model failures should all fall back gracefully rather than crash.
-- Containerize the full stack (backend, frontend, database) with Docker and docker-compose.
+### Phase 4 — Semantic Publication Layer ★
+**Goal:** the catalogue is a graph, not just a result list. *(FR9–FR14)*
+- Implement `src/rdf.js`: namespace table, term constructors, `productToTriples`, `resultsToTriples`.
+- Implement the three serialisers, and **verify each parses** — legal Turtle QNames, correct
+  `rdf:nodeID` handling, parseable JSON-LD.
+- Build the class tree and axiom list from the flat category list.
+- Implement `buildSPARQL` so every UI constraint has a visible query counterpart.
+- Embed the result set as JSON-LD in the document head; add Dublin Core metadata and a
+  `WebApplication` description to `index.html`.
 
-**Outcome:** A resilient, dockerized application that can be started with a single command.
-
----
-
-### Phase 6 — Evaluation
-**Goal:** Quantifiable proof that semantic search outperforms keyword search on natural-language queries.
-- Prepare a set of test queries covering exact matches, paraphrased queries, and vague/descriptive queries.
-- Run each test query through both the semantic and keyword endpoints.
-- Manually label top results as relevant/not relevant and compute a simple metric such as Precision@5 for each approach.
-- Summarize findings in a comparison table, highlighting where semantic search wins (primarily on paraphrased and descriptive queries).
-
-**Outcome:** Documented, evidence-based comparison showing the practical benefit of the semantic approach.
+**Outcome:** every answer can be exported as valid RDF in three syntaxes, and the page is
+machine-readable.
 
 ---
 
-## 7. Stretch Goals (Optional Enhancements)
+### Phase 5 — Interface
+**Goal:** an interface that teaches the model it is built on. *(FR11, FR15–FR18)*
+- Design system: paper/ink ground, serif display, monospace for every formal term, and **colour as a
+  type system** — teal resources, indigo classes, amber literals, violet blank nodes, slate
+  predicates — applied identically in tables, graph nodes and code panes.
+- Debounced search bar, framed as binding `?query`.
+- **Ontology rail** instead of a filter sidebar: the class tree *is* the category filter.
+- **Resource cards** announced by URI, expanding into triples / graph / proof.
+- **RDF visualisation** in inline SVG: a property star per resource, and a class-clustered view of
+  the whole answer set with node size encoding similarity.
+- **Inspector drawer**: Turtle · RDF/XML · JSON-LD · SPARQL · Mapping · Axioms · Prefixes.
+- **Concepts drawer**: the layer cake with honest per-layer status, and the syllabus map.
+- Meaning/Strings toggle for the side-by-side comparison the evaluation needs.
+- Loading, empty and error states; light/dark themes; responsive to 400 px.
 
-| Feature | Description |
-|---------|-------------|
-| Image-based similarity search | Use a model like CLIP to embed product images, enabling "find visually similar products" |
-| Personalized ranking | Use `search_logs` click history to bias ranking toward a user's preferences |
-| Multilingual search | Swap in a multilingual embedding model to support non-English queries |
-| Typo tolerance | Add fuzzy matching as a fallback layer for misspelled queries |
-| LLM query expansion | Use an LLM to rewrite vague queries into more descriptive text before embedding, improving retrieval quality |
+**Outcome:** a complete end-to-end demo in which the Semantic Web concepts are visible, not implied.
 
 ---
 
-## 8. Summary
+### Phase 6 — Performance & Reliability
+**Goal:** fast, resilient, deployable.
+- Redis caching for repeated queries.
+- Log every search to `search_logs`.
+- Error handling: empty queries, database downtime and embedding-model failure all degrade rather
+  than crash — the UI explicitly offers Strings mode when the encoder is unreachable.
+- Containerise backend, frontend and database with docker-compose.
 
-This project demonstrates how combining a relational database with vector embeddings and similarity search can meaningfully improve e-commerce product discovery. The plan is structured so that each phase produces a working, testable component: first the data layer, then the embedding pipeline, then the search API, then the interface, and finally performance hardening and a data-backed evaluation. This incremental structure keeps the project functional at every stage rather than requiring everything to come together only at the very end.
+**Outcome:** a resilient, dockerised application started with one command.
+
+---
+
+### Phase 7 — Evaluation
+**Goal:** evidence, not assertion.
+- Test queries in three classes: exact matches, paraphrases, and vague/descriptive queries.
+- Run each through both the semantic and keyword endpoints.
+- Label top results relevant/not relevant; compute Precision@5 for each approach.
+- Summarise in a comparison table, showing where semantic search wins — expected to be on
+  paraphrased and descriptive queries, and *not* on exact brand or model-number lookups, which is
+  worth reporting rather than hiding.
+- **Also validate the graph**: run the generated Turtle and RDF/XML through an external parser
+  (`rapper`, Apache Jena `riot`, or the W3C RDF validator) and the JSON-LD through the JSON-LD
+  playground. A graph that does not parse is not published.
+
+**Outcome:** a documented, evidence-based comparison, plus proof that the RDF output is valid.
+
+---
+
+## 8. Stretch Goals
+
+| Feature | Description | Unit |
+|---------|-------------|------|
+| SPARQL endpoint | Materialise the graph into Apache Jena Fuseki and make the displayed query actually executable | 5 |
+| Content negotiation | Serve `text/turtle` / `application/rdf+xml` from `/api/product/{id}` by `Accept` header — real Linked Data publishing | 1, 4 |
+| Ontology mapping | Map the local `cat:` classes onto a second vocabulary (GoodRelations, Product Types) with `owl:equivalentClass` | 2, 4 |
+| FOAF user profiles | Publish user accounts as FOAF, and link `search_logs` to them for a provenance-aware history | 5 |
+| Agent negotiation | A second agent that consumes the JSON-LD and re-ranks — Unit 3's intelligent agents, made concrete | 3 |
+| Image similarity | CLIP embeddings for "visually similar products" | — |
+| Multilingual search | A multilingual embedding model; the `@en` language tags already anticipate this | — |
+| LLM query expansion | Rewrite vague queries into descriptive text before embedding | — |
+
+---
+
+## 9. Summary
+
+The project demonstrates two things at once. The first is practical: combining a relational database
+with vector embeddings measurably improves product discovery for natural-language queries, and the
+evaluation phase is designed to prove it with numbers rather than assert it.
+
+The second is the course's own subject. The same catalogue, published as RDF over reused
+vocabularies, becomes something other systems can consume without prior agreement — that is what the
+layer cake is for, and each of its layers has a visible counterpart in the interface. Where the
+system reaches a layer it cannot honestly implement, it says so.
+
+Each phase produces a working, testable component: the data layer, then the embeddings, then the API,
+then the graph, then the interface, then hardening and evaluation. The system is functional at every
+stage rather than only at the end.

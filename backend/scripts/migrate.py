@@ -6,7 +6,7 @@ import os
 # Add the backend directory to path so we can import app modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from app.config import get_settings
 from app.db.session import Base
 from app.models.models import (
@@ -21,12 +21,13 @@ def run_migrations():
     print("Connecting to database...")
     engine = create_engine(settings.database_url_sync, echo=True)
 
-    with engine.connect() as conn:
-        # Enable pgvector extension
-        print("Enabling pgvector extension...")
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        conn.commit()
-        print("pgvector extension enabled.")
+    if not settings.is_sqlite:
+        with engine.connect() as conn:
+            # Enable pgvector extension
+            print("Enabling pgvector extension...")
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            conn.commit()
+            print("pgvector extension enabled.")
 
     # Create all tables
     print("Creating tables...")
@@ -34,13 +35,7 @@ def run_migrations():
     print("All tables created successfully!")
 
     # Verify tables
-    with engine.connect() as conn:
-        result = conn.execute(text(
-            "SELECT table_name FROM information_schema.tables "
-            "WHERE table_schema = 'public' ORDER BY table_name"
-        ))
-        tables = [row[0] for row in result]
-        print(f"\nTables in database: {tables}")
+    print(f"\nTables in database: {sorted(inspect(engine).get_table_names())}")
 
     engine.dispose()
 

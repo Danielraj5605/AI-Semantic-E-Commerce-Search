@@ -1,11 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" prefix="schema: http://schema.org/ dcterms: http://purl.org/dc/terms/">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SemanticSearch — AI-Powered Product Discovery</title>
-    <meta name="description" content="Search products by meaning, not just keywords. AI-powered semantic search engine using vector embeddings." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>CatalogueGraph — a product catalogue published as RDF</title>
+    <meta
+      name="description"
+      content="A relational product catalogue exposed as a knowledge graph: URIs, an OWL class hierarchy, schema.org descriptions, and Turtle / RDF-XML / JSON-LD serialisations, searched by meaning."
+    />
+
+    <!-- Dublin Core metadata for the document itself (Unit 1: annotation). -->
+    <meta name="dcterms.title" content="CatalogueGraph" />
+    <meta name="dcterms.subject" content="Semantic Web; RDF; OWL; SPARQL; semantic search" />
+    <meta name="dcterms.type" content="InteractiveResource" />
+
+    <!--
+      The application injects a second application/ld+json block describing the
+      current result set. This one describes the application itself, so the page
+      is self-describing even before a query is run.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org/",
+        "@type": "WebApplication",
+        "name": "CatalogueGraph",
+        "applicationCategory": "Semantic Web demonstrator",
+        "description": "Publishes a relational product catalogue as RDF and retrieves from it by meaning rather than by string matching.",
+        "about": [
+          { "@type": "Thing", "name": "Resource Description Framework" },
+          { "@type": "Thing", "name": "Web Ontology Language" },
+          { "@type": "Thing", "name": "SPARQL" },
+          { "@type": "Thing", "name": "Semantic search" }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

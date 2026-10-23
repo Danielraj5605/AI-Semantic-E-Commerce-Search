@@ -7,7 +7,7 @@ from sqlalchemy import (
     Column, Integer, String, Text, Float, Numeric,
     DateTime, ForeignKey, Index, UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid, JSON
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 
@@ -39,7 +39,7 @@ class Product(Base):
     __tablename__ = "products"
 
     product_id = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
@@ -84,7 +84,7 @@ class ProductImage(Base):
 
     image_id = Column(Integer, primary_key=True, autoincrement=True)
     product_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("products.product_id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -98,7 +98,7 @@ class User(Base):
     """User accounts for personalization and search logging."""
     __tablename__ = "users"
 
-    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(Text, nullable=False)
@@ -113,13 +113,13 @@ class SearchLog(Base):
 
     log_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("users.user_id", ondelete="SET NULL"),
         nullable=True,
     )
     query_text = Column(Text, nullable=False)
     clicked_product_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("products.product_id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -136,11 +136,14 @@ class ProductEmbedding(Base):
     __tablename__ = "product_embeddings"
 
     product_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("products.product_id", ondelete="CASCADE"),
         primary_key=True,
     )
-    embedding = Column(Vector(settings.embedding_dimension), nullable=False)
+    # JSON on SQLite: no pgvector there, similarity is computed in Python.
+    embedding = Column(
+        Vector(settings.embedding_dimension).with_variant(JSON(), "sqlite"), nullable=False
+    )
     model_version = Column(String(100), nullable=False, default="all-MiniLM-L6-v2")
 
     # Relationships
