@@ -27,9 +27,9 @@ function Stars({ value = 0 }) {
   );
 }
 
-export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
+export default function ResourceCard({ result, query, mode, rank, onSimilar, initialTab = null }) {
   const { product, score } = result;
-  const [tab, setTab] = useState(null); // null | 'triples' | 'graph' | 'proof'
+  const [tab, setTab] = useState(initialTab); // null | 'triples' | 'graph' | 'proof' | 'reasoning'
   const [imgFailed, setImgFailed] = useState(false);
 
   const triples = useMemo(() => productToTriples(product, score), [product, score]);

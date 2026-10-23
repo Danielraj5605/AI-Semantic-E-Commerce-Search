@@ -60,7 +60,7 @@ function ClassNode({ node, depth, selected, onSelect }) {
   );
 }
 
-export default function OntologyRail({ filters, active, onChange, onClear, onShowAxioms }) {
+export default function OntologyRail({ filters, active, onChange, onClear, onShowAxioms, embedded = false }) {
   const classTree = useMemo(() => buildClassTree(filters?.categories || []), [filters]);
   const axiomCount = useMemo(() => ontologyAxioms(classTree).length, [classTree]);
   const [brandsExpanded, setBrandsExpanded] = useState(false);
@@ -82,7 +82,7 @@ export default function OntologyRail({ filters, active, onChange, onClear, onSho
   const activeCount = Object.keys(active).filter((k) => k !== "limit").length;
 
   return (
-    <aside className="rail" aria-label="Ontology browser">
+    <aside className={`rail ${embedded ? "rail--embedded" : ""}`} aria-label="Ontology browser">
       <button
         className="rail__disclosure"
         aria-expanded={mobileOpen}
