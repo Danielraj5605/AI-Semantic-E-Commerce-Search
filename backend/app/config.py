@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = 300  # 5 minute cache
     cache_max_size: int = 512
 
+    # Click-popularity re-ranking (FR8). 0 = off. When > 0, a semantic result's
+    # rank is its similarity times (1 + weight * ln(1 + clicks)), so products that
+    # people actually open for similar searches drift upward. It is global, not
+    # per-user: the app has no accounts to personalise for. The reported score
+    # stays the raw similarity, and only the order within a page changes.
+    click_boost_weight: float = 0.0
+
     # Namespace for minted resource URIs (products, brands). The default matches
     # the frontend. Set it to this API's own address, e.g. http://localhost:8000/api/,
     # and every product URI becomes dereferenceable via /api/product/{id}.

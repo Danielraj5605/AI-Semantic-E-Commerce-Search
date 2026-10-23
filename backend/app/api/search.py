@@ -15,6 +15,7 @@ from app.services.search_service import (
     keyword_search,
     get_autocomplete_suggestions,
     get_filter_options,
+    apply_click_boost,
 )
 from app.models.models import SearchLog, Product
 from app.services.embedding_service import EmbeddingUnavailable
@@ -89,6 +90,7 @@ async def search(
             min_price=min_price, max_price=max_price,
             min_rating=min_rating, min_similarity=min_similarity,
         )
+        results = await apply_click_boost(db, results, settings.click_boost_weight)
         search_type = "semantic"
     except EmbeddingUnavailable as e:
         # Only a missing encoder degrades to keyword. Database errors are not

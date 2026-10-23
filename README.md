@@ -187,7 +187,7 @@ if the build fails, please report it.*
 ### Tests
 
 ```bash
-cd backend  && pip install -r requirements-dev.txt && pytest   # API, reliability, RDF interop, evaluation guards
+cd backend  && pip install -r requirements-dev.txt && pytest     # API, reliability, RDF interop, evaluation guards
 cd frontend && npm test                                         # rdf.js serialisers and SPARQL
 ```
 
@@ -206,7 +206,7 @@ skip when the file is absent (as in CI).
 | `GET` | `/api/filters` | Categories, brands, price range — the raw material for the class tree |
 | `GET` | `/api/product/{id}` | One product. `Accept: text/turtle`, `application/rdf+xml` or `application/ld+json` (or `?format=ttl\|rdf\|jsonld`) returns its RDF description; otherwise JSON |
 | `GET` | `/api/product/{id}/similar` | Nearest products by stored embedding (works with the encoder down) |
-| `POST` | `/api/click` | Record that a result was opened (`{query, product_id}`) |
+| `POST` | `/api/click` | Record that a result was opened (`{query, product_id}`). With `CLICK_BOOST_WEIGHT` > 0 these clicks nudge popular products up the semantic ranking (global popularity, not per-user; reported scores are unchanged) |
 | `POST/PUT/DELETE` | `/api/admin/products[/{id}]` | Add / update / delete a product and re-embed it. **Only mounted when `ADMIN_TOKEN` is set**; send it as `X-Admin-Token` |
 | `GET` | `/health` | Component state: database and embedding model (503 only if the database is down) |
 
@@ -331,6 +331,7 @@ EMBEDDING_MODEL=all-MiniLM-L6-v2
 EMBEDDING_DIMENSION=384
 FRONTEND_URL=http://localhost:5173
 USE_LOCAL_DB=false                       # true = SQLite file instead of Postgres
+# CLICK_BOOST_WEIGHT=0.3                 # re-rank by click popularity; 0 (default) = off
 BASE_URI=http://example.org/catalog/     # set to http://localhost:8000/api/ for dereferenceable URIs
 # ADMIN_TOKEN=change-me                  # set to mount /api/admin/*; leave unset to disable
 ```

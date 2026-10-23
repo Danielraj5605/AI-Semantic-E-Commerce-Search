@@ -1,6 +1,7 @@
 """Search service — semantic and keyword search logic."""
 
 import logging
+import math
 import re
 from typing import Optional
 from uuid import UUID
@@ -9,7 +10,7 @@ import numpy as np
 from sqlalchemy import select, func, text, and_, cast, String, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.models import Product, ProductEmbedding, Category
+from app.models.models import Product, ProductEmbedding, Category, SearchLog
 from app.services.embedding_service import encode_text
 from app.config import get_settings
 
@@ -318,6 +319,28 @@ async def keyword_search(
         })
 
     return results, total
+
+
+async def apply_click_boost(db: AsyncSession, results: list[dict], weight: float) -> list[dict]:
+    """Re-order a page of semantic results by click popularity; scores are untouched."""
+    if weight <= 0 or len(results) < 2:
+        return results
+    ids = [r["product"]["product_id"] for r in results]
+    rows = (
+        await db.execute(
+            select(SearchLog.clicked_product_id, func.count())
+            .where(SearchLog.clicked_product_id.in_(ids))
+            .group_by(SearchLog.clicked_product_id)
+        )
+    ).all()
+    clicks = {pid: n for pid, n in rows}
+    if not clicks:
+        return results
+    return sorted(
+        results,
+        key=lambda r: r["score"] * (1 + weight * math.log1p(clicks.get(r["product"]["product_id"], 0))),
+        reverse=True,
+    )
 
 
 async def get_product_row(db: AsyncSession, product_id: UUID) -> Optional[dict]:
