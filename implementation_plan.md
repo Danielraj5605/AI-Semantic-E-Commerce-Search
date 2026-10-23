@@ -445,3 +445,43 @@ system reaches a layer it cannot honestly implement, it says so.
 Each phase produces a working, testable component: the data layer, then the embeddings, then the API,
 then the graph, then the interface, then hardening and evaluation. The system is functional at every
 stage rather than only at the end.
+
+---
+
+## 10. Status and deviations from this plan
+
+Written after the build, so the plan above can be read against what actually exists.
+
+| Phase | Status | Notes |
+|---|---|---|
+| 0 Setup · 1 Data · 2 Embeddings · 3 Search API | Done | Local SQLite mode added alongside Neon/pgvector |
+| 4 Semantic publication | Done | Turtle, RDF/XML and JSON-LD all validated by an independent parser (rdflib) and equal the Python mapping |
+| 5 Interface | Done | |
+| 6 Performance & reliability | Done, one item deferred | In-memory TTL cache instead of Redis (single process, so Redis adds nothing yet). Degradation, logging and `/health` implemented and tested. Docker files written but **not built** on the author's machine |
+| 7 Evaluation | Done | `backend/eval/`; results in the README. Labels are a first pass |
+
+| Requirement | Status |
+|---|---|
+| FR1-FR4, FR6 | Done |
+| FR5 admin CRUD | Done; off unless `ADMIN_TOKEN` is set |
+| FR7 find similar | Done |
+| FR8 personalised ranking | **Not done.** Clicks are now logged (`POST /api/click`), which is the data it would need |
+| FR9 dereferenceable URIs | Done when `BASE_URI` points at the API; the default stays `example.org` |
+| FR10-FR18 | Done (Logic, Proof and Trust layers remain partial, and are labelled so) |
+
+**Changes made while building, and why**
+
+- **Category hierarchy.** The data had no parent categories, so the class tree was flat. Added
+  `set_category_hierarchy.py` and made category filtering include subclasses.
+- **Keyword search tokenises.** Whole-phrase `ILIKE` matched almost nothing for multi-word queries,
+  which made both the fallback and the evaluation baseline unfair.
+- **Fallback narrowed.** Only a missing encoder falls back to keyword; a database failure is a 503.
+- **Hybrid ranking evaluated, not shipped.** Reciprocal rank fusion gave no gain over semantic.
+- **JSON-LD fixed.** It had silently lost dates, category types, language tags and datatypes.
+
+**Known limits**
+
+- 72 products and 30 queries: the evaluation shows direction, not precision.
+- On exact lookups semantic and keyword tie; this may change on a larger catalogue.
+- Vague queries are the weak spot (e.g. "make music at home").
+- The Neon/pgvector path was not exercised in this round (Neon was unreachable); the SQLite path was.

@@ -37,7 +37,7 @@ This project pairs them deliberately, and the interface is built to make the pai
 | RDF | ✅ full | Each catalogue row lifted into triples over schema.org and Dublin Core |
 | RDF Schema | ✅ full | Categories become `owl:Class` nodes joined by `rdfs:subClassOf` |
 | Ontology (OWL) | ◐ partial | Object/datatype properties with declared ranges; browsable class tree |
-| Logic | ◐ partial | Subclass entailment on filtering; no deeper inference |
+| Logic | ◐ partial | Subclass entailment on filtering (choosing *Electronics* returns Laptops too); no deeper inference |
 | Proof | ◐ partial | Every result has a "Why this?" trace of the steps that produced it |
 | Trust | ◐ partial | Provenance (`prov:wasDerivedFrom`) and a confidence band per assertion |
 
@@ -111,7 +111,8 @@ Databases" approach from Unit 4, and it is why the RDF can never drift from the 
 | ORM | SQLAlchemy 2.0 (async) |
 | Database | PostgreSQL (Neon.tech) + `pgvector` |
 | Embeddings | `sentence-transformers` — `all-MiniLM-L6-v2` (384-dim, local, free) |
-| Caching | `cachetools` TTLCache (5 min, in-memory) |
+| Caching | `cachetools` TTLCache (5 min, in-memory; degraded answers are never cached) |
+| RDF cross-check | `rdflib` (server-side Linked Data and test oracle) |
 
 ---
 
@@ -121,7 +122,9 @@ Databases" approach from Unit 4, and it is why the RDF can never drift from the 
 
 - Python 3.11+
 - Node.js 18+
-- A [Neon.tech](https://neon.tech) PostgreSQL database with the `pgvector` extension enabled
+- **Either** a [Neon.tech](https://neon.tech) PostgreSQL database with the `pgvector` extension,
+  **or** nothing at all: set `USE_LOCAL_DB=true` and the app uses a SQLite file
+  (`backend/catalogue.db`), ranking by cosine similarity in Python. Fine for a demo-sized catalogue.
 
 ### 1. Clone
 
@@ -151,6 +154,7 @@ cp .env.example .env
 python scripts/migrate.py             # create tables, enable pgvector
 python scripts/load_data.py           # import products from data/
 python scripts/generate_embeddings.py # embed the whole catalogue
+python scripts/set_category_hierarchy.py  # give categories parents (rdfs:subClassOf); safe to re-run
 ```
 
 ### 4. Run
@@ -165,6 +169,29 @@ cd frontend && npm install && npm run dev
 
 - App → **http://localhost:5173**
 - API docs → **http://localhost:8000/docs**
+
+### Or with Docker
+
+```bash
+docker compose up --build      # frontend :8080, backend :8000
+```
+
+The backend image bakes in the embedding model, so it starts without network access. By default
+it serves `backend/catalogue.db` (build it first with the scripts above); for Neon, put
+`USE_LOCAL_DB=false`, `DATABASE_URL` and `DATABASE_URL_SYNC` in a `.env` beside
+`docker-compose.yml`. Compose sets `BASE_URI` so product URIs are the URLs that serve them.
+*The Docker files have not been built on the author's machine (no Docker installed there);
+if the build fails, please report it.*
+
+### Tests
+
+```bash
+cd backend  && pip install -r requirements-dev.txt && pytest   # API, reliability, RDF interop, evaluation guards
+cd frontend && npm test                                         # rdf.js serialisers and SPARQL
+```
+
+Backend tests run against a temporary copy of `catalogue.db`, so they never modify your data; they
+skip when the file is absent (as in CI).
 
 ---
 
@@ -252,17 +279,22 @@ ranked resources, each with a proof trace
 │   ├── app/
 │   │   ├── main.py                    # FastAPI entry point
 │   │   ├── config.py                  # settings from .env
-│   │   ├── api/search.py              # route handlers + TTL cache
+│   │   ├── api/search.py              # search routes, click logging, TTL cache
+│   │   ├── api/products.py            # /product/{id}: content negotiation, similar
+│   │   ├── api/admin.py               # product CRUD (mounted only if ADMIN_TOKEN set)
 │   │   ├── db/session.py              # async SQLAlchemy session
 │   │   ├── models/
 │   │   │   ├── models.py              # ORM models
 │   │   │   └── schemas.py             # Pydantic response schemas
 │   │   └── services/
-│   │       ├── embedding_service.py   # MiniLM wrapper
-│   │       └── search_service.py      # semantic + keyword search
+│   │       ├── embedding_service.py   # MiniLM wrapper, cache-first load, failure cool-down
+│   │       ├── search_service.py      # semantic + keyword search, subclass entailment
+│   │       └── rdf_service.py         # row -> RDF via rdflib (mirrors frontend/src/rdf.js)
 │   └── scripts/
-│       ├── migrate.py · load_data.py
+│       ├── migrate.py · load_data.py · set_category_hierarchy.py
 │       ├── generate_embeddings.py · validate_search.py
+│   ├── eval/                          # labelled queries, metrics, run_eval.py, RESULTS.md
+│   └── tests/                         # pytest: API, reliability, products, RDF interop, eval
 ├── frontend/
 │   ├── index.html                     # DC metadata + WebApplication JSON-LD
 │   └── src/
@@ -279,6 +311,7 @@ ranked resources, each with a proof trace
 │           ├── Inspector.jsx          # serialisation + SPARQL + mapping
 │           ├── LayerCake.jsx          # layer cake + syllabus map
 │           └── Term.jsx               # one RDF term, coloured by kind
+├── docker-compose.yml · DEMO.md
 ├── data/                              # (gitignored) source catalogue
 ├── implementation_plan.md
 └── README.md
@@ -296,7 +329,12 @@ DATABASE_URL_SYNC=postgresql+psycopg2://USER:PASSWORD@HOST/DBNAME?sslmode=requir
 EMBEDDING_MODEL=all-MiniLM-L6-v2
 EMBEDDING_DIMENSION=384
 FRONTEND_URL=http://localhost:5173
+USE_LOCAL_DB=false                       # true = SQLite file instead of Postgres
+BASE_URI=http://example.org/catalog/     # set to http://localhost:8000/api/ for dereferenceable URIs
+# ADMIN_TOKEN=change-me                  # set to mount /api/admin/*; leave unset to disable
 ```
+
+Frontend (`frontend/.env`, optional): `VITE_API_BASE` and `VITE_BASE_URI` (must equal `BASE_URI`).
 
 > **Never commit `.env`** — it is in `.gitignore` by default.
 

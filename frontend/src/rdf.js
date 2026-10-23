@@ -26,7 +26,8 @@ export const NAMESPACES = {
   foaf: "http://xmlns.com/foaf/0.1/",
   prov: "http://www.w3.org/ns/prov#",
   cat: "http://example.org/ontology/catalog#",
-  ex: "http://example.org/catalog/",
+  // Must equal the backend BASE_URI (trailing slash) for URIs to dereference.
+  ex: import.meta.env?.VITE_BASE_URI || "http://example.org/catalog/",
 };
 
 /** Human-readable gloss for each vocabulary, shown in the prefix table. */

@@ -1,0 +1,38 @@
+# One command to run everything:   docker compose up --build
+#
+#   frontend  http://localhost:8080
+#   backend   http://localhost:8000   (docs at /docs)
+#
+# By default the backend serves the local SQLite catalogue (backend/catalogue.db,
+# which must exist - build it with the scripts in the README first). To use
+# Neon/Postgres instead, put DATABASE_URL, DATABASE_URL_SYNC and USE_LOCAL_DB=false
+# in a .env file next to this one.
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      USE_LOCAL_DB: ${USE_LOCAL_DB:-true}
+      LOCAL_DB_PATH: /data/catalogue.db
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_URL_SYNC: ${DATABASE_URL_SYNC:-}
+      FRONTEND_URL: http://localhost:8080
+      BASE_URI: ${BASE_URI:-http://localhost:8000/api/}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+    volumes:
+      - ./backend/catalogue.db:/data/catalogue.db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000/api}
+        VITE_BASE_URI: ${BASE_URI:-http://localhost:8000/api/}  # keep equal to the backend BASE_URI
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
