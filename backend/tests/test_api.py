@@ -17,7 +17,6 @@ def test_filters_shape(client):
     assert {"category_id", "name", "parent_category_id"} <= set(body["categories"][0])
 
 
-@pytest.mark.xfail(reason="data gap: categories.parent_category_id is empty, so the class tree is flat (fix in data step)", strict=True)
 def test_category_hierarchy_is_populated(client):
     cats = client.get("/api/filters").json()["categories"]
     assert any(c["parent_category_id"] is not None for c in cats), \
@@ -85,3 +84,30 @@ def test_autocomplete(client):
 ])
 def test_validation_rejects_bad_input(client, params):
     assert client.get("/api/search", params=params).status_code == 422
+
+
+def _children(client, parent_name):
+    cats = client.get("/api/filters").json()["categories"]
+    pid = next(c["category_id"] for c in cats if c["name"] == parent_name)
+    return [c["name"] for c in cats if c["parent_category_id"] == pid]
+
+
+def test_parent_category_entails_its_subclasses(client):
+    """Selecting a class returns members of its subclasses (rdfs:subClassOf entailment)."""
+    kids = _children(client, "Electronics")
+    assert kids, "Electronics should have subclasses"
+    body = client.get("/api/search", params={"q": "device", "category": "Electronics", "limit": 100}).json()
+    got = {r["product"]["category_name"] for r in body["results"]}
+    assert got and got <= set(kids) | {"Electronics"}
+    assert got & set(kids), "no subclass members returned for the parent class"
+
+
+def test_leaf_category_unchanged(client):
+    body = client.get("/api/search", params={"q": "laptop", "category": "Laptops", "limit": 100}).json()
+    assert body["results"]
+    assert {r["product"]["category_name"] for r in body["results"]} == {"Laptops"}
+
+
+def test_keyword_search_also_entails_subclasses(client):
+    body = client.get("/api/search/keyword", params={"q": "a", "category": "Clothing", "limit": 100}).json()
+    assert {r["product"]["category_name"] for r in body["results"]} <= {"Men's Clothing", "Women's Clothing", "Footwear", "Clothing"}

@@ -44,11 +44,13 @@ async def semantic_search(
         min_similarity = settings.min_similarity
     # 1. Encode the query
     query_embedding = encode_text(query)
+    category_names = await expand_category(db, category)
 
     if settings.is_sqlite:
         return await _semantic_search_in_python(
             db, query_embedding, limit, offset,
             category, brand, min_price, max_price, min_rating, min_similarity,
+            category_names,
         )
 
     # 2. Build the base query with cosine distance
@@ -68,17 +70,7 @@ async def semantic_search(
     )
 
     # 3. Apply filters
-    filters = []
-    if category:
-        filters.append(func.lower(Category.name) == category.lower())
-    if brand:
-        filters.append(func.lower(Product.brand) == brand.lower())
-    if min_price is not None:
-        filters.append(Product.price >= min_price)
-    if max_price is not None:
-        filters.append(Product.price <= max_price)
-    if min_rating is not None:
-        filters.append(Product.rating_avg >= min_rating)
+    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating)
 
     # The relevance floor exists to stop an open-ended query from dragging the
     # whole catalogue back with it. An explicit category or brand already does
@@ -119,10 +111,38 @@ async def semantic_search(
     return results, total
 
 
-def _structural_filters(category, brand, min_price, max_price, min_rating) -> list:
+async def expand_category(db: AsyncSession, category: Optional[str]) -> Optional[list[str]]:
+    """Lower-cased names of a category and all its descendants.
+
+    This is rdfs:subClassOf entailment: asking for Electronics must also return
+    Laptops, because every Laptop *is* an Electronics. A leaf (or unknown) name
+    expands to just itself, so flat categories behave exactly as before.
+    """
+    if not category:
+        return None
+    rows = (await db.execute(select(Category.category_id, Category.name, Category.parent_category_id))).all()
+    children: dict[int, list] = {}
+    for cid, _name, pid in rows:
+        if pid is not None:
+            children.setdefault(pid, []).append(cid)
+    names = {cid: name for cid, name, _ in rows}
+
+    start = [cid for cid, name in names.items() if name.lower() == category.lower()]
+    seen: set[int] = set()
+    stack = list(start)
+    while stack:  # iterative, and `seen` makes a parent cycle harmless
+        cid = stack.pop()
+        if cid in seen:
+            continue
+        seen.add(cid)
+        stack.extend(children.get(cid, []))
+    return sorted({names[c].lower() for c in seen} | {category.lower()})
+
+
+def _structural_filters(category_names, brand, min_price, max_price, min_rating) -> list:
     filters = []
-    if category:
-        filters.append(func.lower(Category.name) == category.lower())
+    if category_names:
+        filters.append(func.lower(Category.name).in_(category_names))
     if brand:
         filters.append(func.lower(Product.brand) == brand.lower())
     if min_price is not None:
@@ -164,6 +184,7 @@ async def _semantic_search_in_python(
     max_price: Optional[float],
     min_rating: Optional[float],
     min_similarity: float,
+    category_names: Optional[list[str]] = None,
 ) -> tuple[list[dict], int]:
     """Same contract as the pgvector path, for the local SQLite database.
 
@@ -175,7 +196,7 @@ async def _semantic_search_in_python(
         .join(ProductEmbedding, Product.product_id == ProductEmbedding.product_id)
         .outerjoin(Category, Product.category_id == Category.category_id)
     )
-    filters = _structural_filters(category, brand, min_price, max_price, min_rating)
+    filters = _structural_filters(category_names, brand, min_price, max_price, min_rating)
     if filters:
         stmt = stmt.where(and_(*filters))
 
@@ -224,17 +245,9 @@ async def keyword_search(
     )
 
     # Apply filters
-    filters = []
-    if category:
-        filters.append(func.lower(Category.name) == category.lower())
-    if brand:
-        filters.append(func.lower(Product.brand) == brand.lower())
-    if min_price is not None:
-        filters.append(Product.price >= min_price)
-    if max_price is not None:
-        filters.append(Product.price <= max_price)
-    if min_rating is not None:
-        filters.append(Product.rating_avg >= min_rating)
+    filters = _structural_filters(
+        await expand_category(db, category), brand, min_price, max_price, min_rating
+    )
 
     if filters:
         stmt = stmt.where(and_(*filters))
