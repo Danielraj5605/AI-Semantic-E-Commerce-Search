@@ -1,4 +1,4 @@
-"""Replace the product images whose original Unsplash links were deleted (404).
+"""Replace product images: ones whose Unsplash links were deleted (404), and ones shared by two products.
 
 Each entry names a product and a freely licensed photo (Unsplash License: free to
 use, attribution appreciated but not required). Photographers are credited here.
@@ -33,6 +33,9 @@ IMAGES = {
     "Robot Vacuum with Mapping": (U + "photo-1653990480360-31a12ce9723e?w=400", "Onur Binay"),
     "Professional Hair Dryer 1875W": (U + "photo-1727364438136-6edc10ef0a52?w=400", "Shubham Dhage"),
     "Electric Toothbrush Sonic": (U + "photo-1593010997923-65947b08b772?w=400", "Stephen Crowther"),
+    # These two used to share a photo with another product.
+    "Memory Foam Mattress Topper Queen": (U + "photo-1759176170553-7c078c66c514?w=400", "Costa Live"),
+    "Electric Standing Desk": (U + "photo-1623177623442-979c1e42c255?w=400", "ergonofis"),
 }
 
 
