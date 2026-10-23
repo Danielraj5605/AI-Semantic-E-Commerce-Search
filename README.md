@@ -331,7 +331,7 @@ EMBEDDING_MODEL=all-MiniLM-L6-v2
 EMBEDDING_DIMENSION=384
 FRONTEND_URL=http://localhost:5173
 USE_LOCAL_DB=false                       # true = SQLite file instead of Postgres
-# CLICK_BOOST_WEIGHT=0.3                 # re-rank by click popularity; 0 (default) = off
+# CLICK_BOOST_WEIGHT=0.1                 # re-rank by click popularity; 0 (default) = off
 BASE_URI=http://example.org/catalog/     # set to http://localhost:8000/api/ for dereferenceable URIs
 # ADMIN_TOKEN=change-me                  # set to mount /api/admin/*; leave unset to disable
 ```

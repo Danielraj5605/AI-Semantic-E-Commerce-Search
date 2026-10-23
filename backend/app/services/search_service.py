@@ -321,7 +321,9 @@ async def keyword_search(
     return results, total
 
 
-async def apply_click_boost(db: AsyncSession, results: list[dict], weight: float) -> list[dict]:
+async def apply_click_boost(
+    db: AsyncSession, results: list[dict], weight: float, min_clicks: int = 3
+) -> list[dict]:
     """Re-order a page of semantic results by click popularity; scores are untouched."""
     if weight <= 0 or len(results) < 2:
         return results
@@ -333,7 +335,7 @@ async def apply_click_boost(db: AsyncSession, results: list[dict], weight: float
             .group_by(SearchLog.clicked_product_id)
         )
     ).all()
-    clicks = {pid: n for pid, n in rows}
+    clicks = {pid: n for pid, n in rows if n >= min_clicks}
     if not clicks:
         return results
     return sorted(

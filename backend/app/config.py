@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     # per-user: the app has no accounts to personalise for. The reported score
     # stays the raw similarity, and only the order within a page changes.
     click_boost_weight: float = 0.0
+    # A product needs at least this many clicks before they count at all, so one
+    # stray click cannot reorder results. Below it the product is treated as unclicked.
+    click_boost_min_clicks: int = 3
 
     # Namespace for minted resource URIs (products, brands). The default matches
     # the frontend. Set it to this API's own address, e.g. http://localhost:8000/api/,

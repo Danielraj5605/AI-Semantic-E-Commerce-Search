@@ -49,6 +49,20 @@ def test_turning_the_boost_off_restores_the_original_order(client, monkeypatch):
     assert [pid for pid, _ in restored] == sorted((pid for pid, _ in restored), key=lambda p: -dict(restored)[p])
 
 
+def test_a_single_stray_click_cannot_reorder_results(client, monkeypatch):
+    params = {"q": "pet care and animal comfort", "min_similarity": 0, "limit": 5}
+
+    def order():
+        search_api._search_cache.clear()
+        return [r["product"]["product_id"] for r in client.get("/api/search", params=params).json()["results"]]
+
+    base = order()
+    client.post("/api/click", json={"query": "stray", "product_id": base[-1]})
+    monkeypatch.setattr(get_settings(), "click_boost_weight", 5.0)
+    monkeypatch.setattr(get_settings(), "click_boost_min_clicks", 3)
+    assert order() == base
+
+
 def test_boost_with_no_clicks_is_a_no_op(client, monkeypatch):
     monkeypatch.setattr(get_settings(), "click_boost_weight", 5.0)
     search_api._search_cache.clear()

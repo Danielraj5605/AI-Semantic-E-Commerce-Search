@@ -90,7 +90,9 @@ async def search(
             min_price=min_price, max_price=max_price,
             min_rating=min_rating, min_similarity=min_similarity,
         )
-        results = await apply_click_boost(db, results, settings.click_boost_weight)
+        results = await apply_click_boost(
+            db, results, settings.click_boost_weight, settings.click_boost_min_clicks
+        )
         search_type = "semantic"
     except EmbeddingUnavailable as e:
         # Only a missing encoder degrades to keyword. Database errors are not
