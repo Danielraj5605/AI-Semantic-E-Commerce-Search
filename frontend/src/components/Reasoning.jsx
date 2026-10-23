@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getInferences, getProof, getProvenance, verifyGraph } from "../api";
+import Icon from "./Icon";
 
 /**
  * What the reasoner derived about one resource, why each fact holds, and whether
@@ -43,7 +44,9 @@ function ProofItem({ item }) {
   return (
     <li className="infer">
       <button className="infer__head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <span className="infer__caret">{open ? "▾" : "▸"}</span>
+        <span className={`infer__caret ${open ? "is-open" : ""}`}>
+          <Icon name="chevron" size={12} />
+        </span>
         <code className="infer__stmt">{item.conclusion}</code>
         <span className="infer__meta">
           {item.rule} · {item.depth} step{item.depth === 1 ? "" : "s"} · {item.grounded_in} grounding fact
@@ -126,6 +129,7 @@ function Provenance({ productId }) {
       </div>
       {check && (
         <p className={`prov__result prov__result--${check.signature_valid ? "ok" : "bad"}`} role="status">
+          <Icon name={check.signature_valid ? "shield" : "alert"} size={15} />
           {check.signature_valid
             ? "Signature valid — the graph is exactly what was signed."
             : check.tampered

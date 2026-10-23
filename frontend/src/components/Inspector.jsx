@@ -12,6 +12,7 @@ import {
   ontologyAxioms,
 } from "../rdf";
 import LogicPanel from "./LogicPanel";
+import Icon from "./Icon";
 
 /**
  * The inspector is where the answer stops being a page of products and becomes
@@ -211,7 +212,7 @@ export default function Inspector({ open, onClose, results, query, filters, mode
             </p>
           </div>
           <button className="drawer__close" onClick={onClose} aria-label="Close inspector">
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </header>
 

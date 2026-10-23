@@ -111,7 +111,7 @@ export default function LogicPanel() {
                 <span className="term term--class">{d.class}</span>
               </td>
               <td className="grid__note">
-                {d.path.map(short).join(" → ")} {d.test.kind === "min" ? `≥ ${d.test.value}` : `= ${d.test.value}`}
+                {d.path.map(short).join(" / ")} {d.test.kind === "min" ? `≥ ${d.test.value}` : `= ${d.test.value}`}
               </td>
               <td className="grid__note">{d.comment}</td>
             </tr>

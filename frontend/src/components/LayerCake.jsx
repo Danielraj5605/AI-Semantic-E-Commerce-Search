@@ -1,4 +1,5 @@
 import { LAYER_CAKE, UNIT_MAP } from "../concepts";
+import Icon from "./Icon";
 
 /**
  * The layer cake (Unit 1) drawn as a real stack rather than described in prose.
@@ -60,7 +61,7 @@ export default function ConceptsDrawer({ open, onClose }) {
             <p className="drawer__sub">21CSE452T · Semantic Web — the stack, and this app on it</p>
           </div>
           <button className="drawer__close" onClick={onClose} aria-label="Close">
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </header>
 

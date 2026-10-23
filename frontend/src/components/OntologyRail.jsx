@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { buildClassTree, ontologyAxioms, brandURI } from "../rdf";
+import Icon from "./Icon";
 
 /**
  * The left rail is an ontology browser rather than a filter sidebar.
@@ -26,7 +27,7 @@ function ClassNode({ node, depth, selected, onSelect }) {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? `Collapse ${node.name}` : `Expand ${node.name}`}
           >
-            ▸
+            <Icon name="chevron" size={12} />
           </button>
         ) : (
           <span className="tree__twisty tree__twisty--leaf" aria-hidden="true" />
@@ -92,7 +93,7 @@ export default function OntologyRail({ filters, active, onChange, onClear, onSho
           {activeCount > 0 && <span className="rail__badge">{activeCount}</span>}
         </span>
         <span className={`rail__chevron ${mobileOpen ? "is-open" : ""}`} aria-hidden="true">
-          ▸
+          <Icon name="chevron" size={14} />
         </span>
       </button>
 
@@ -135,7 +136,7 @@ export default function OntologyRail({ filters, active, onChange, onClear, onSho
         </ul>
 
         <button className="rail__link" onClick={onShowAxioms}>
-          Inspect {axiomCount} axioms →
+          Inspect {axiomCount} axioms <Icon name="arrowRight" size={12} />
         </button>
       </section>
 

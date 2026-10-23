@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getAutocomplete } from "../api";
+import Icon from "./Icon";
 
 /**
  * The query box. Framed as binding a value to the ?query variable, because the
@@ -65,6 +66,7 @@ export default function SearchBar({ onSearch, initial = "", size = "md" }) {
   return (
     <div className={`qbox qbox--${size}`}>
       <div className="qbox__field">
+        <Icon name="search" size={size === "lg" ? 20 : 16} className="qbox__icon" />
         <span className="qbox__var" aria-hidden="true">
           ?query
         </span>
@@ -94,11 +96,12 @@ export default function SearchBar({ onSearch, initial = "", size = "md" }) {
               inputRef.current?.focus();
             }}
           >
-            ✕
+            <Icon name="close" size={14} />
           </button>
         )}
         <button className="qbox__go" onClick={() => submit()}>
-          Resolve
+          <span>Search</span>
+          <Icon name="arrowRight" size={15} />
         </button>
       </div>
 

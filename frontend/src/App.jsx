@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { searchProducts, keywordSearch, getFilters, getSimilar } from "./api";
 import { toJSONLD, resultsToTriples, categoryURI } from "./rdf";
-import { describeService, EXAMPLE_QUERIES } from "./concepts";
+import { describeService } from "./concepts";
 
 import SearchBar from "./components/SearchBar";
+import Landing from "./components/Landing";
+import Icon, { Logo } from "./components/Icon";
 import OntologyRail from "./components/OntologyRail";
 import ResourceCard from "./components/ResourceCard";
 import Inspector from "./components/Inspector";
-import ConceptsDrawer, { LayerCakeStack } from "./components/LayerCake";
+import ConceptsDrawer from "./components/LayerCake";
 import { ResultGraph } from "./components/GraphView";
 import Term from "./components/Term";
 
@@ -78,79 +80,6 @@ function useJSONLDEmbed(results) {
       nodeRef.current = null;
     },
     []
-  );
-}
-
-/* ============================================================
-   LANDING
-   ============================================================ */
-
-function Landing({ onSearch, onConcepts }) {
-  return (
-    <div className="landing">
-      <div className="landing__inner">
-        <p className="landing__eyebrow">
-          <span className="dot" /> 21CSE452T · Semantic Web · catalogue as a knowledge graph
-        </p>
-
-        <h1 className="landing__title">
-          A product catalogue,
-          <br />
-          <em>published as a graph.</em>
-        </h1>
-
-        <p className="landing__lede">
-          The rows sit in PostgreSQL. Everything you see is a view over them in RDF —
-          every product carries a URI, is typed against an ontology, describes itself in
-          schema.org terms, and states where its facts came from. Ask in plain language;
-          read the answer as triples.
-        </p>
-
-        <div className="landing__search">
-          <SearchBar onSearch={onSearch} size="lg" />
-        </div>
-
-        <div className="landing__examples">
-          {EXAMPLE_QUERIES.map((e) => (
-            <button key={e.text} className="example" onClick={() => onSearch(e.text)}>
-              <span className="example__text">{e.text}</span>
-              <span className="example__note">{e.note}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="landing__split">
-          <section className="landing__cake">
-            <h2 className="landing__h2">The stack, and how far this climbs</h2>
-            <LayerCakeStack compact />
-            <button className="linkbtn" onClick={onConcepts}>
-              Read the full mapping →
-            </button>
-          </section>
-
-          <section className="landing__sample">
-            <h2 className="landing__h2">What a result actually is</h2>
-            <pre className="code__pre code__pre--inline">
-              <code>{`@prefix schema: <http://schema.org/> .
-@prefix cat:    <http://example.org/ontology/catalog#> .
-
-ex:product/8f3a-…
-    rdf:type            schema:Product ;
-    rdf:type            cat:Outerwear ;
-    schema:name         "Insulated Parka"@en ;
-    schema:brand        ex:brand/northline ;
-    schema:offers       [ schema:price "189.00"^^xsd:decimal ] ;
-    cat:similarityScore "0.8134"^^xsd:double ;
-    prov:wasDerivedFrom ex:table/products .`}</code>
-            </pre>
-            <p className="landing__caption">
-              Subject, predicate, object — and a provenance statement, so the claim can be
-              traced rather than taken on faith.
-            </p>
-          </section>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -253,8 +182,11 @@ export default function App() {
   if (!started) {
     return (
       <>
-        <ThemeToggle theme={theme} setTheme={setTheme} floating />
-        <Landing onSearch={(q) => run(q)} onConcepts={() => setConcepts(true)} />
+        <Landing
+          onSearch={(q) => run(q)}
+          onConcepts={() => setConcepts(true)}
+          themeToggle={<ThemeToggle theme={theme} setTheme={setTheme} />}
+        />
         <ConceptsDrawer open={concepts} onClose={() => setConcepts(false)} />
       </>
     );
@@ -265,12 +197,8 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <button className="mark" onClick={goHome} aria-label="Back to the start">
-          <span className="mark__glyph" aria-hidden="true">
-            ⬡
-          </span>
-          <span className="mark__text">
-            Catalogue<span className="mark__thin">Graph</span>
-          </span>
+          <Logo />
+          <span className="mark__text">CatalogueGraph</span>
         </button>
 
         <div className="topbar__search">
@@ -278,7 +206,7 @@ export default function App() {
         </div>
 
         <div className="topbar__right">
-          <div className="segmented" role="group" aria-label="Retrieval strategy">
+          <div className="segmented" role="group" aria-label="Retrieval strategy" data-on={mode === "keyword" ? 1 : 0}>
             <button
               className={mode === "semantic" ? "is-on" : ""}
               onClick={() => changeMode("semantic")}
@@ -306,11 +234,11 @@ export default function App() {
         <span className="servicebar__sep">·</span>
         <span className="servicebar__method">{service.method}</span>
         <span className="servicebar__spacer" />
-        <button className="linkbtn" onClick={() => setConcepts(true)}>
-          Concepts
+        <button className="btn btn--sm btn--ghost" onClick={() => setConcepts(true)}>
+          <Icon name="layers" size={14} /> Concepts
         </button>
-        <button className="linkbtn linkbtn--strong" onClick={() => setInspector("turtle")}>
-          Inspect graph
+        <button className="btn btn--sm" onClick={() => setInspector("turtle")}>
+          <Icon name="code" size={14} /> Inspect graph
         </button>
       </div>
 
@@ -329,7 +257,7 @@ export default function App() {
             <div className="answer">
               <div className="answer__line">
                 <h1 className="answer__count">
-                  {results.total}
+                  <span key={results.total + results.query} className="answer__num">{results.total}</span>
                   <span className="answer__count-unit">
                     {results.total === 1 ? " resource" : " resources"}
                   </span>
@@ -357,16 +285,16 @@ export default function App() {
                   <span className="pill">
                     <Term term={{ term: "uri", value: categoryURI(active.category) }} role="class" />
                     <button onClick={() => changeConstraint("category", null)} aria-label="Remove class constraint">
-                      ✕
+                      <Icon name="close" size={12} />
                     </button>
                   </span>
                 )}
-                <div className="segmented segmented--sm" role="group" aria-label="View">
+                <div className="segmented segmented--sm" role="group" aria-label="View" data-on={view === "graph" ? 1 : 0}>
                   <button className={view === "resources" ? "is-on" : ""} onClick={() => setView("resources")}>
-                    Resources
+                    <Icon name="filter" size={13} /> Resources
                   </button>
                   <button className={view === "graph" ? "is-on" : ""} onClick={() => setView("graph")}>
-                    Graph
+                    <Icon name="graph" size={13} /> Graph
                   </button>
                 </div>
               </div>
@@ -385,7 +313,7 @@ export default function App() {
 
           {error && (
             <div className="notice notice--bad">
-              <h2 className="notice__title">The service did not respond</h2>
+              <h2 className="notice__title"><Icon name="alert" size={16} /> The service did not respond</h2>
               <p className="notice__body">{error}</p>
               <p className="notice__hint">
                 Graceful degradation is a stated requirement — try <strong>Strings</strong> mode,
@@ -474,16 +402,16 @@ export default function App() {
    SMALL PIECES
    ============================================================ */
 
-function ThemeToggle({ theme, setTheme, floating = false }) {
+function ThemeToggle({ theme, setTheme }) {
   const next = theme === "dark" ? "light" : "dark";
   return (
     <button
-      className={`themebtn ${floating ? "themebtn--float" : ""}`}
+      className="themebtn"
       onClick={() => setTheme(next)}
       title={`Switch to ${next} theme`}
       aria-label={`Theme: ${theme}. Switch to ${next}.`}
     >
-      {theme === "dark" ? "☾" : "☀"}
+      <Icon name={theme === "dark" ? "moon" : "sun"} size={16} />
     </button>
   );
 }

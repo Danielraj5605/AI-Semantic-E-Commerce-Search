@@ -5,6 +5,7 @@ import Reasoning from "./Reasoning";
 import { ResourceGraph } from "./GraphView";
 import Term from "./Term";
 import { recordClick, getCalibration } from "../api";
+import Icon from "./Icon";
 
 /**
  * A result is presented as a *resource*, not a product tile: it is announced by
@@ -20,9 +21,7 @@ function Stars({ value = 0 }) {
   return (
     <span className="stars" aria-label={`${value.toFixed(1)} out of 5`}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <span key={i} className={i < full ? "stars__on" : "stars__off"} aria-hidden="true">
-          ★
-        </span>
+        <Icon key={i} name="star" size={12} fill className={i < full ? "stars__on" : "stars__off"} />
       ))}
     </span>
   );
@@ -57,7 +56,7 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
   };
 
   return (
-    <article className="res" aria-labelledby={`res-${product.product_id}`}>
+    <article className="res" style={{ "--i": Math.min(rank - 1, 12) }} aria-labelledby={`res-${product.product_id}`}>
       {/* ---- URI header: identity comes first ------------------------- */}
       <header className="res__uri">
         <span className="res__rank">{String(rank).padStart(2, "0")}</span>
@@ -67,7 +66,12 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
         <span className={`belief belief--${trust.level}`} title={measured ? `${trust.basis} ${measured.text}.` : trust.basis}>
           {trust.label}
           {score != null && mode === "semantic" && (
-            <span className="belief__score">{score.toFixed(3)}</span>
+            <>
+              <span className="belief__meter" aria-hidden="true">
+                <span style={{ "--v": Math.max(0, Math.min(1, score / 0.75)) }} />
+              </span>
+              <span className="belief__score">{score.toFixed(3)}</span>
+            </>
           )}
         </span>
       </header>
@@ -83,7 +87,7 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
             />
           ) : (
             <span className="res__thumb-fallback" aria-hidden="true">
-              ⬡
+              <Icon name="image" size={22} />
             </span>
           )}
         </div>
@@ -149,7 +153,7 @@ export default function ResourceCard({ result, query, mode, rank, onSimilar }) {
         </button>
         {onSimilar && mode !== "keyword" && (
           <button onClick={() => onSimilar(product)} title="Products nearest to this one by embedding">
-            Similar ↗
+            Similar <Icon name="arrowUpRight" size={12} />
           </button>
         )}
       </nav>
