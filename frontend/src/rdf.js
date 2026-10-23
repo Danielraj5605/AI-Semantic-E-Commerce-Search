@@ -333,26 +333,39 @@ export function toRDFXML(triples) {
  * actually gets embedded in the page for crawlers.
  */
 export function toJSONLD(results = []) {
+  // `name` and `description` carry @en, exactly as the Turtle and RDF/XML do.
+  // Anything that must stay a plain literal (a brand's name) uses the prefixed
+  // key `schema:name`, which this context entry does not affect.
   const context = {
     schema: NAMESPACES.schema,
     dcterms: NAMESPACES.dcterms,
     cat: NAMESPACES.cat,
     prov: NAMESPACES.prov,
-    name: "schema:name",
-    description: "schema:description",
+    xsd: NAMESPACES.xsd,
+    name: { "@id": "schema:name", "@language": "en" },
+    description: { "@id": "schema:description", "@language": "en" },
     image: { "@id": "schema:image", "@type": "@id" },
   };
+  const typed = (value, type) => ({ "@value": value, "@type": type });
 
   const graph = results.map(({ product, score }) => {
+    const types = ["schema:Product"];
+    if (product.category_name) types.push(categoryURI(product.category_name));
+
     const node = {
       "@id": `${NAMESPACES.ex}product/${product.product_id}`,
-      "@type": "schema:Product",
+      "@type": types,
       name: product.name,
     };
     if (product.description) node.description = product.description;
     if (product.image_url) node.image = product.image_url;
     if (product.brand) {
-      node["schema:brand"] = { "@type": "schema:Brand", name: product.brand };
+      // The brand is a resource with its own URI, as in the other syntaxes.
+      node["schema:brand"] = {
+        "@id": `${NAMESPACES.ex}brand/${slug(product.brand)}`,
+        "@type": "schema:Brand",
+        "schema:name": product.brand,
+      };
     }
     if (product.category_name) {
       node["schema:category"] = { "@id": categoryURI(product.category_name) };
@@ -360,7 +373,7 @@ export function toJSONLD(results = []) {
     if (product.price !== null && product.price !== undefined) {
       node["schema:offers"] = {
         "@type": "schema:Offer",
-        "schema:price": Number(product.price).toFixed(2),
+        "schema:price": typed(Number(product.price).toFixed(2), "xsd:decimal"),
         "schema:priceCurrency": "USD",
         "schema:availability": {
           "@id": product.stock_quantity > 0 ? "schema:InStock" : "schema:OutOfStock",
@@ -370,12 +383,15 @@ export function toJSONLD(results = []) {
     if (product.rating_avg) {
       node["schema:aggregateRating"] = {
         "@type": "schema:AggregateRating",
-        "schema:ratingValue": Number(product.rating_avg).toFixed(1),
-        "schema:bestRating": "5.0",
+        "schema:ratingValue": typed(Number(product.rating_avg).toFixed(1), "xsd:decimal"),
+        "schema:bestRating": typed("5.0", "xsd:decimal"),
       };
     }
+    if (product.created_at) {
+      node["dcterms:created"] = typed(product.created_at, "xsd:dateTime");
+    }
     if (score !== null && score !== undefined) {
-      node["cat:similarityScore"] = Number(score).toFixed(4);
+      node["cat:similarityScore"] = typed(Number(score).toFixed(4), "xsd:double");
     }
     node["prov:wasDerivedFrom"] = { "@id": `${NAMESPACES.ex}table/products` };
     return node;

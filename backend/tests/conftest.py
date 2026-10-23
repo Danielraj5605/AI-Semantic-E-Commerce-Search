@@ -38,4 +38,6 @@ def client():
 
 @pytest.fixture(scope="session")
 def db_path():
+    if not _source.exists():
+        pytest.skip("backend/catalogue.db not present (it is gitignored)")
     return _db

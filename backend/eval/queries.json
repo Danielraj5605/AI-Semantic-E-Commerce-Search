@@ -1,0 +1,47 @@
+{
+  "labelling_rule": "A product is relevant if its name or description explicitly supports the need the query states. Merely sharing a word with the query does not make it relevant, and neither does being generally related (e.g. a diffuser for 'sleep' is excluded: its description says 'relaxing', not sleep). Labels are product names, so they survive re-seeding. DRAFTED BY AN AI FROM THE CATALOGUE TEXT - REVIEW BEFORE QUOTING THE RESULTS.",
+  "classes": {
+    "exact": "The query reuses the product's own words, a brand, or a model name. Keyword search should do well here.",
+    "paraphrase": "The query states the need in different words from the product text. This is where meaning should beat strings.",
+    "vague": "A loosely worded goal or situation with several acceptable answers. Hardest for both approaches.",
+    "no_answer": "Nothing in the catalogue is relevant. The right behaviour is to return nothing, not the nearest thing."
+  },
+  "queries": [
+    {"id": "E01", "class": "exact", "query": "running shoes", "relevant": ["CloudWalk Running Shoes"]},
+    {"id": "E02", "class": "exact", "query": "yoga mat", "relevant": ["Yoga Mat Premium 6mm"]},
+    {"id": "E03", "class": "exact", "query": "mechanical keyboard", "relevant": ["Mechanical Keyboard RGB"]},
+    {"id": "E04", "class": "exact", "query": "robot vacuum", "relevant": ["Robot Vacuum with Mapping"]},
+    {"id": "E05", "class": "exact", "query": "standing desk", "relevant": ["Electric Standing Desk", "Standing Desk Converter"]},
+    {"id": "E06", "class": "exact", "query": "ergonomic mouse", "relevant": ["Wireless Ergonomic Mouse"]},
+    {"id": "E07", "class": "exact", "query": "gaming laptop", "relevant": ["Gaming Beast X17"]},
+    {"id": "E08", "class": "exact", "query": "hiking boots", "relevant": ["Waterproof Hiking Boots"]},
+    {"id": "E09", "class": "exact", "query": "TrailMaster", "relevant": ["Waterproof Hiking Boots", "Waterproof Hiking Jacket"], "note": "brand name"},
+    {"id": "E10", "class": "exact", "query": "Galaxy Nova 14 Pro", "relevant": ["Galaxy Nova 14 Pro"], "note": "model name"},
+
+    {"id": "P01", "class": "paraphrase", "query": "warm winter jacket for men", "relevant": ["Insulated Men's Parka"], "note": "the plan's own example; Down Puffer Vest is women's, so excluded"},
+    {"id": "P02", "class": "paraphrase", "query": "footwear for plantar fasciitis", "relevant": ["Orthopedic Comfort Shoes for Flat Feet"]},
+    {"id": "P03", "class": "paraphrase", "query": "headphones that cancel outside sound", "relevant": ["NoiseCancel Pro Headphones"]},
+    {"id": "P04", "class": "paraphrase", "query": "cell phone with a great camera but cheap", "relevant": ["BudgetKing A15"], "note": "PixelPure 8 has the camera but is $799"},
+    {"id": "P05", "class": "paraphrase", "query": "laptop for a student on a tight budget", "relevant": ["ChromeBook Lite 11", "Budget Work Notebook 14"]},
+    {"id": "P06", "class": "paraphrase", "query": "chair that supports my lower back", "relevant": ["Ergonomic Office Chair"], "note": "'lumbar support' in the description"},
+    {"id": "P07", "class": "paraphrase", "query": "pot for slow cooked stews", "relevant": ["Cast Iron Dutch Oven 6-Quart", "Stainless Steel Cookware Set 10-Piece"], "note": "judgement call: the cookware set includes a stockpot"},
+    {"id": "P08", "class": "paraphrase", "query": "wireless earphones for the gym", "relevant": ["TrueWireless Earbuds Sport"]},
+    {"id": "P09", "class": "paraphrase", "query": "gadget to track my workouts and heart rate", "relevant": ["Fitness Tracker Watch"]},
+    {"id": "P10", "class": "paraphrase", "query": "something to keep my coffee hot", "relevant": ["Insulated Water Bottle 32oz"], "note": "'hot 12 hours'; the Coffee Maker shares the word 'coffee' but does not keep anything hot, so it is a deliberate distractor"},
+
+    {"id": "V01", "class": "vague", "query": "something to help me sleep better", "relevant": ["Noise Machine for Sleep", "Memory Foam Mattress Topper Queen"]},
+    {"id": "V02", "class": "vague", "query": "gift for someone who loves cooking", "relevant": ["The Art of Cooking: Italian Edition", "Cast Iron Dutch Oven 6-Quart", "Stainless Steel Cookware Set 10-Piece", "Bamboo Cutting Board Set"]},
+    {"id": "V03", "class": "vague", "query": "gear for a camping trip", "relevant": ["Waterproof Hiking Boots", "Waterproof Hiking Jacket", "Portable Power Station 500W", "Compact Binoculars 10x42", "Rugged Outdoor Phone X5"]},
+    {"id": "V04", "class": "vague", "query": "relieve wrist and back pain while working at a desk", "relevant": ["Wireless Ergonomic Mouse", "Ergonomic Office Chair", "Electric Standing Desk", "Standing Desk Converter"]},
+    {"id": "V05", "class": "vague", "query": "keep my home air clean for allergies", "relevant": ["Smart Air Purifier with HEPA Filter"]},
+    {"id": "V06", "class": "vague", "query": "get fit at home without a gym", "relevant": ["Adjustable Dumbbell Set 5-52 lbs", "Resistance Bands Set of 5", "Yoga Mat Premium 6mm"]},
+    {"id": "V07", "class": "vague", "query": "teach my kid about programming", "relevant": ["STEM Building Robot Kit"]},
+    {"id": "V08", "class": "vague", "query": "what to wear to a job interview", "relevant": ["Tailored Blazer Jacket", "Slim Fit Cotton Oxford Shirt"]},
+    {"id": "V09", "class": "vague", "query": "protect my skin from the sun", "relevant": ["SPF 50 Mineral Sunscreen"]},
+    {"id": "V10", "class": "vague", "query": "make music at home", "relevant": ["Studio Monitor Speakers Pair"]},
+
+    {"id": "N01", "class": "no_answer", "query": "diesel engine spare parts", "relevant": []},
+    {"id": "N02", "class": "no_answer", "query": "18 carat gold wedding ring", "relevant": []},
+    {"id": "N03", "class": "no_answer", "query": "garden lawn mower", "relevant": []}
+  ]
+}

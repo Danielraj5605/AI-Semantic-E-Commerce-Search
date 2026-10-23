@@ -1,0 +1,1661 @@
+{
+  "settings": {
+    "embedding_model": "all-MiniLM-L6-v2",
+    "min_similarity": 0.25,
+    "k": 5
+  },
+  "summary": {
+    "exact": {
+      "queries": 10,
+      "keyword": {
+        "p@5": 0.24,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "hit@1": 1.0
+      },
+      "semantic": {
+        "p@5": 0.24,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "hit@1": 1.0
+      },
+      "hybrid": {
+        "p@5": 0.24,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "hit@1": 1.0
+      }
+    },
+    "paraphrase": {
+      "queries": 10,
+      "keyword": {
+        "p@5": 0.0,
+        "recall@5": 0.0,
+        "mrr": 0.0,
+        "hit@1": 0.0
+      },
+      "semantic": {
+        "p@5": 0.24,
+        "recall@5": 1.0,
+        "mrr": 0.95,
+        "hit@1": 0.9
+      },
+      "hybrid": {
+        "p@5": 0.24,
+        "recall@5": 1.0,
+        "mrr": 0.95,
+        "hit@1": 0.9
+      }
+    },
+    "vague": {
+      "queries": 10,
+      "keyword": {
+        "p@5": 0.02,
+        "recall@5": 0.05,
+        "mrr": 0.1,
+        "hit@1": 0.1
+      },
+      "semantic": {
+        "p@5": 0.32,
+        "recall@5": 0.728,
+        "mrr": 0.733,
+        "hit@1": 0.6
+      },
+      "hybrid": {
+        "p@5": 0.32,
+        "recall@5": 0.728,
+        "mrr": 0.733,
+        "hit@1": 0.6
+      }
+    },
+    "overall": {
+      "queries": 30,
+      "keyword": {
+        "p@5": 0.087,
+        "recall@5": 0.35,
+        "mrr": 0.367,
+        "hit@1": 0.367
+      },
+      "semantic": {
+        "p@5": 0.267,
+        "recall@5": 0.909,
+        "mrr": 0.894,
+        "hit@1": 0.833
+      },
+      "hybrid": {
+        "p@5": 0.267,
+        "recall@5": 0.909,
+        "mrr": 0.894,
+        "hit@1": 0.833
+      }
+    }
+  },
+  "abstention": {
+    "keyword": {
+      "queries": 3,
+      "correctly_empty": 3,
+      "results_returned": [
+        0,
+        0,
+        0
+      ]
+    },
+    "semantic": {
+      "queries": 3,
+      "correctly_empty": 3,
+      "results_returned": [
+        0,
+        0,
+        0
+      ]
+    },
+    "hybrid": {
+      "queries": 3,
+      "correctly_empty": 3,
+      "results_returned": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "queries": [
+    {
+      "id": "E01",
+      "class": "exact",
+      "query": "running shoes",
+      "relevant": [
+        "CloudWalk Running Shoes"
+      ],
+      "ranked": {
+        "keyword": [
+          "CloudWalk Running Shoes"
+        ],
+        "semantic": [
+          "CloudWalk Running Shoes",
+          "Orthopedic Comfort Shoes for Flat Feet",
+          "Canvas Slip-On Sneakers",
+          "Waterproof Hiking Boots",
+          "Classic Leather Chelsea Boots"
+        ],
+        "hybrid": [
+          "CloudWalk Running Shoes",
+          "Orthopedic Comfort Shoes for Flat Feet",
+          "Canvas Slip-On Sneakers",
+          "Waterproof Hiking Boots",
+          "Classic Leather Chelsea Boots"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 8,
+        "hybrid": 8
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "class": "exact",
+      "query": "yoga mat",
+      "relevant": [
+        "Yoga Mat Premium 6mm"
+      ],
+      "ranked": {
+        "keyword": [
+          "Yoga Mat Premium 6mm"
+        ],
+        "semantic": [
+          "Yoga Mat Premium 6mm",
+          "High-Waist Yoga Leggings",
+          "Memory Foam Mattress Topper Queen",
+          "Ergonomic Office Chair",
+          "Mindfulness and Meditation Guide"
+        ],
+        "hybrid": [
+          "Yoga Mat Premium 6mm",
+          "High-Waist Yoga Leggings",
+          "Memory Foam Mattress Topper Queen",
+          "Ergonomic Office Chair",
+          "Mindfulness and Meditation Guide"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 5,
+        "hybrid": 5
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E03",
+      "class": "exact",
+      "query": "mechanical keyboard",
+      "relevant": [
+        "Mechanical Keyboard RGB"
+      ],
+      "ranked": {
+        "keyword": [
+          "Mechanical Keyboard RGB"
+        ],
+        "semantic": [
+          "Mechanical Keyboard RGB",
+          "Wireless Ergonomic Mouse",
+          "Adjustable Dumbbell Set 5-52 lbs",
+          "Electric Standing Desk",
+          "Monitor Light Bar"
+        ],
+        "hybrid": [
+          "Mechanical Keyboard RGB",
+          "Wireless Ergonomic Mouse",
+          "Adjustable Dumbbell Set 5-52 lbs",
+          "Electric Standing Desk",
+          "Monitor Light Bar"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 8,
+        "hybrid": 8
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E04",
+      "class": "exact",
+      "query": "robot vacuum",
+      "relevant": [
+        "Robot Vacuum with Mapping"
+      ],
+      "ranked": {
+        "keyword": [
+          "Robot Vacuum with Mapping"
+        ],
+        "semantic": [
+          "Robot Vacuum with Mapping",
+          "Electric Facial Cleansing Brush"
+        ],
+        "hybrid": [
+          "Robot Vacuum with Mapping",
+          "Electric Facial Cleansing Brush"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E05",
+      "class": "exact",
+      "query": "standing desk",
+      "relevant": [
+        "Electric Standing Desk",
+        "Standing Desk Converter"
+      ],
+      "ranked": {
+        "keyword": [
+          "Electric Standing Desk",
+          "Standing Desk Converter"
+        ],
+        "semantic": [
+          "Electric Standing Desk",
+          "Standing Desk Converter",
+          "Ergonomic Office Chair",
+          "Wireless Ergonomic Mouse",
+          "Budget Work Notebook 14"
+        ],
+        "hybrid": [
+          "Electric Standing Desk",
+          "Standing Desk Converter",
+          "Ergonomic Office Chair",
+          "Wireless Ergonomic Mouse",
+          "Budget Work Notebook 14"
+        ]
+      },
+      "returned": {
+        "keyword": 2,
+        "semantic": 5,
+        "hybrid": 5
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E06",
+      "class": "exact",
+      "query": "ergonomic mouse",
+      "relevant": [
+        "Wireless Ergonomic Mouse"
+      ],
+      "ranked": {
+        "keyword": [
+          "Wireless Ergonomic Mouse"
+        ],
+        "semantic": [
+          "Wireless Ergonomic Mouse",
+          "Ergonomic Office Chair",
+          "Mechanical Keyboard RGB",
+          "Electric Standing Desk"
+        ],
+        "hybrid": [
+          "Wireless Ergonomic Mouse",
+          "Ergonomic Office Chair",
+          "Mechanical Keyboard RGB",
+          "Electric Standing Desk"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 4,
+        "hybrid": 4
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E07",
+      "class": "exact",
+      "query": "gaming laptop",
+      "relevant": [
+        "Gaming Beast X17"
+      ],
+      "ranked": {
+        "keyword": [
+          "Gaming Beast X17"
+        ],
+        "semantic": [
+          "Gaming Beast X17",
+          "UltraSlim Pro 15 Laptop",
+          "Budget Work Notebook 14",
+          "ChromeBook Lite 11",
+          "Strategy Board Game Collection"
+        ],
+        "hybrid": [
+          "Gaming Beast X17",
+          "UltraSlim Pro 15 Laptop",
+          "Budget Work Notebook 14",
+          "ChromeBook Lite 11",
+          "Strategy Board Game Collection"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 10,
+        "hybrid": 10
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E08",
+      "class": "exact",
+      "query": "hiking boots",
+      "relevant": [
+        "Waterproof Hiking Boots"
+      ],
+      "ranked": {
+        "keyword": [
+          "Waterproof Hiking Boots"
+        ],
+        "semantic": [
+          "Waterproof Hiking Boots",
+          "CloudWalk Running Shoes",
+          "Canvas Slip-On Sneakers",
+          "Classic Leather Chelsea Boots",
+          "Orthopedic Comfort Shoes for Flat Feet"
+        ],
+        "hybrid": [
+          "Waterproof Hiking Boots",
+          "CloudWalk Running Shoes",
+          "Canvas Slip-On Sneakers",
+          "Classic Leather Chelsea Boots",
+          "Orthopedic Comfort Shoes for Flat Feet"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 13,
+        "hybrid": 13
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E09",
+      "class": "exact",
+      "query": "TrailMaster",
+      "relevant": [
+        "Waterproof Hiking Boots",
+        "Waterproof Hiking Jacket"
+      ],
+      "note": "brand name",
+      "ranked": {
+        "keyword": [
+          "Waterproof Hiking Boots",
+          "Waterproof Hiking Jacket"
+        ],
+        "semantic": [
+          "Waterproof Hiking Jacket",
+          "Waterproof Hiking Boots"
+        ],
+        "hybrid": [
+          "Waterproof Hiking Jacket",
+          "Waterproof Hiking Boots"
+        ]
+      },
+      "returned": {
+        "keyword": 2,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "E10",
+      "class": "exact",
+      "query": "Galaxy Nova 14 Pro",
+      "relevant": [
+        "Galaxy Nova 14 Pro"
+      ],
+      "note": "model name",
+      "ranked": {
+        "keyword": [
+          "Galaxy Nova 14 Pro"
+        ],
+        "semantic": [
+          "Galaxy Nova 14 Pro",
+          "BudgetKing A15",
+          "UltraSlim Pro 15 Laptop",
+          "Budget Work Notebook 14",
+          "iPhone-Style Ultra Max"
+        ],
+        "hybrid": [
+          "Galaxy Nova 14 Pro",
+          "BudgetKing A15",
+          "UltraSlim Pro 15 Laptop",
+          "Budget Work Notebook 14",
+          "iPhone-Style Ultra Max"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 8,
+        "hybrid": 8
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P01",
+      "class": "paraphrase",
+      "query": "warm winter jacket for men",
+      "relevant": [
+        "Insulated Men's Parka"
+      ],
+      "note": "the plan's own example; Down Puffer Vest is women's, so excluded",
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Insulated Men's Parka",
+          "Tailored Blazer Jacket",
+          "Waterproof Hiking Jacket",
+          "Down Puffer Vest",
+          "Merino Wool Crew Sweater"
+        ],
+        "hybrid": [
+          "Insulated Men's Parka",
+          "Tailored Blazer Jacket",
+          "Waterproof Hiking Jacket",
+          "Down Puffer Vest",
+          "Merino Wool Crew Sweater"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 6,
+        "hybrid": 6
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P02",
+      "class": "paraphrase",
+      "query": "footwear for plantar fasciitis",
+      "relevant": [
+        "Orthopedic Comfort Shoes for Flat Feet"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Orthopedic Comfort Shoes for Flat Feet",
+          "CloudWalk Running Shoes",
+          "Waterproof Hiking Boots",
+          "Classic Leather Chelsea Boots",
+          "Canvas Slip-On Sneakers"
+        ],
+        "hybrid": [
+          "Orthopedic Comfort Shoes for Flat Feet",
+          "CloudWalk Running Shoes",
+          "Waterproof Hiking Boots",
+          "Classic Leather Chelsea Boots",
+          "Canvas Slip-On Sneakers"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 7,
+        "hybrid": 7
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P03",
+      "class": "paraphrase",
+      "query": "headphones that cancel outside sound",
+      "relevant": [
+        "NoiseCancel Pro Headphones"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "NoiseCancel Pro Headphones",
+          "TrueWireless Earbuds Sport",
+          "Portable Bluetooth Speaker XL",
+          "Noise Machine for Sleep",
+          "Vintage Vinyl Turntable"
+        ],
+        "hybrid": [
+          "NoiseCancel Pro Headphones",
+          "TrueWireless Earbuds Sport",
+          "Portable Bluetooth Speaker XL",
+          "Noise Machine for Sleep",
+          "Vintage Vinyl Turntable"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 5,
+        "hybrid": 5
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P04",
+      "class": "paraphrase",
+      "query": "cell phone with a great camera but cheap",
+      "relevant": [
+        "BudgetKing A15"
+      ],
+      "note": "PixelPure 8 has the camera but is $799",
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "BudgetKing A15",
+          "Galaxy Nova 14 Pro",
+          "Rugged Outdoor Phone X5",
+          "iPhone-Style Ultra Max",
+          "PixelPure 8"
+        ],
+        "hybrid": [
+          "BudgetKing A15",
+          "Galaxy Nova 14 Pro",
+          "Rugged Outdoor Phone X5",
+          "iPhone-Style Ultra Max",
+          "PixelPure 8"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 10,
+        "hybrid": 10
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P05",
+      "class": "paraphrase",
+      "query": "laptop for a student on a tight budget",
+      "relevant": [
+        "ChromeBook Lite 11",
+        "Budget Work Notebook 14"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Budget Work Notebook 14",
+          "UltraSlim Pro 15 Laptop",
+          "ChromeBook Lite 11",
+          "Gaming Beast X17",
+          "BudgetKing A15"
+        ],
+        "hybrid": [
+          "Budget Work Notebook 14",
+          "UltraSlim Pro 15 Laptop",
+          "ChromeBook Lite 11",
+          "Gaming Beast X17",
+          "BudgetKing A15"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 9,
+        "hybrid": 9
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P06",
+      "class": "paraphrase",
+      "query": "chair that supports my lower back",
+      "relevant": [
+        "Ergonomic Office Chair"
+      ],
+      "note": "'lumbar support' in the description",
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Ergonomic Office Chair",
+          "High-Waist Yoga Leggings",
+          "Vintage Vinyl Turntable",
+          "Electric Standing Desk"
+        ],
+        "hybrid": [
+          "Ergonomic Office Chair",
+          "High-Waist Yoga Leggings",
+          "Vintage Vinyl Turntable",
+          "Electric Standing Desk"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 4,
+        "hybrid": 4
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P07",
+      "class": "paraphrase",
+      "query": "pot for slow cooked stews",
+      "relevant": [
+        "Cast Iron Dutch Oven 6-Quart",
+        "Stainless Steel Cookware Set 10-Piece"
+      ],
+      "note": "judgement call: the cookware set includes a stockpot",
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Stainless Steel Cookware Set 10-Piece",
+          "Cast Iron Dutch Oven 6-Quart"
+        ],
+        "hybrid": [
+          "Stainless Steel Cookware Set 10-Piece",
+          "Cast Iron Dutch Oven 6-Quart"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P08",
+      "class": "paraphrase",
+      "query": "wireless earphones for the gym",
+      "relevant": [
+        "TrueWireless Earbuds Sport"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "TrueWireless Earbuds Sport",
+          "NoiseCancel Pro Headphones",
+          "Portable Bluetooth Speaker XL",
+          "Resistance Bands Set of 5",
+          "Fitness Tracker Watch"
+        ],
+        "hybrid": [
+          "TrueWireless Earbuds Sport",
+          "NoiseCancel Pro Headphones",
+          "Portable Bluetooth Speaker XL",
+          "Resistance Bands Set of 5",
+          "Fitness Tracker Watch"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 13,
+        "hybrid": 13
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P09",
+      "class": "paraphrase",
+      "query": "gadget to track my workouts and heart rate",
+      "relevant": [
+        "Fitness Tracker Watch"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Fitness Tracker Watch",
+          "Wireless Charging Pad Fast",
+          "Wireless Ergonomic Mouse",
+          "Automatic Cat Feeder WiFi",
+          "Monitor Light Bar"
+        ],
+        "hybrid": [
+          "Fitness Tracker Watch",
+          "Wireless Charging Pad Fast",
+          "Wireless Ergonomic Mouse",
+          "Automatic Cat Feeder WiFi",
+          "Monitor Light Bar"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 5,
+        "hybrid": 5
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "P10",
+      "class": "paraphrase",
+      "query": "something to keep my coffee hot",
+      "relevant": [
+        "Insulated Water Bottle 32oz"
+      ],
+      "note": "'hot 12 hours'; the Coffee Maker shares the word 'coffee' but does not keep anything hot, so it is a deliberate distractor",
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Programmable Coffee Maker 12-Cup",
+          "Insulated Water Bottle 32oz",
+          "Insulated Men's Parka"
+        ],
+        "hybrid": [
+          "Programmable Coffee Maker 12-Cup",
+          "Insulated Water Bottle 32oz",
+          "Insulated Men's Parka"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 3,
+        "hybrid": 3
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        }
+      }
+    },
+    {
+      "id": "V01",
+      "class": "vague",
+      "query": "something to help me sleep better",
+      "relevant": [
+        "Noise Machine for Sleep",
+        "Memory Foam Mattress Topper Queen"
+      ],
+      "ranked": {
+        "keyword": [
+          "Noise Machine for Sleep"
+        ],
+        "semantic": [
+          "Noise Machine for Sleep",
+          "Memory Foam Mattress Topper Queen"
+        ],
+        "hybrid": [
+          "Noise Machine for Sleep",
+          "Memory Foam Mattress Topper Queen"
+        ]
+      },
+      "returned": {
+        "keyword": 1,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.2,
+          "recall@5": 0.5,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V02",
+      "class": "vague",
+      "query": "gift for someone who loves cooking",
+      "relevant": [
+        "The Art of Cooking: Italian Edition",
+        "Cast Iron Dutch Oven 6-Quart",
+        "Stainless Steel Cookware Set 10-Piece",
+        "Bamboo Cutting Board Set"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "The Art of Cooking: Italian Edition",
+          "Stainless Steel Cookware Set 10-Piece",
+          "Cast Iron Dutch Oven 6-Quart",
+          "Bamboo Cutting Board Set",
+          "Interactive Dog Toy Puzzle"
+        ],
+        "hybrid": [
+          "The Art of Cooking: Italian Edition",
+          "Stainless Steel Cookware Set 10-Piece",
+          "Cast Iron Dutch Oven 6-Quart",
+          "Bamboo Cutting Board Set",
+          "Interactive Dog Toy Puzzle"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 5,
+        "hybrid": 5
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.8,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.8,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V03",
+      "class": "vague",
+      "query": "gear for a camping trip",
+      "relevant": [
+        "Waterproof Hiking Boots",
+        "Waterproof Hiking Jacket",
+        "Portable Power Station 500W",
+        "Compact Binoculars 10x42",
+        "Rugged Outdoor Phone X5"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Travel Backpack 40L Carry-On",
+          "Waterproof Hiking Jacket",
+          "Insulated Men's Parka",
+          "Down Puffer Vest",
+          "Tailored Blazer Jacket"
+        ],
+        "hybrid": [
+          "Travel Backpack 40L Carry-On",
+          "Waterproof Hiking Jacket",
+          "Insulated Men's Parka",
+          "Down Puffer Vest",
+          "Tailored Blazer Jacket"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 7,
+        "hybrid": 7
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 0.2,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 0.2,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        }
+      }
+    },
+    {
+      "id": "V04",
+      "class": "vague",
+      "query": "relieve wrist and back pain while working at a desk",
+      "relevant": [
+        "Wireless Ergonomic Mouse",
+        "Ergonomic Office Chair",
+        "Electric Standing Desk",
+        "Standing Desk Converter"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Wireless Ergonomic Mouse",
+          "Ergonomic Office Chair",
+          "Electric Standing Desk"
+        ],
+        "hybrid": [
+          "Wireless Ergonomic Mouse",
+          "Ergonomic Office Chair",
+          "Electric Standing Desk"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 3,
+        "hybrid": 3
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.6,
+          "recall@5": 0.75,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.6,
+          "recall@5": 0.75,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V05",
+      "class": "vague",
+      "query": "keep my home air clean for allergies",
+      "relevant": [
+        "Smart Air Purifier with HEPA Filter"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Smart Air Purifier with HEPA Filter",
+          "Robot Vacuum with Mapping"
+        ],
+        "hybrid": [
+          "Smart Air Purifier with HEPA Filter",
+          "Robot Vacuum with Mapping"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V06",
+      "class": "vague",
+      "query": "get fit at home without a gym",
+      "relevant": [
+        "Adjustable Dumbbell Set 5-52 lbs",
+        "Resistance Bands Set of 5",
+        "Yoga Mat Premium 6mm"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Fitness Tracker Watch",
+          "High-Waist Yoga Leggings",
+          "Resistance Bands Set of 5"
+        ],
+        "hybrid": [
+          "Fitness Tracker Watch",
+          "High-Waist Yoga Leggings",
+          "Resistance Bands Set of 5"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 3,
+        "hybrid": 3
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 0.3333333333333333,
+          "mrr": 0.3333333333333333,
+          "hit@1": 0.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 0.3333333333333333,
+          "mrr": 0.3333333333333333,
+          "hit@1": 0.0
+        }
+      }
+    },
+    {
+      "id": "V07",
+      "class": "vague",
+      "query": "teach my kid about programming",
+      "relevant": [
+        "STEM Building Robot Kit"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Kids Bicycle 20-inch",
+          "STEM Building Robot Kit"
+        ],
+        "hybrid": [
+          "Kids Bicycle 20-inch",
+          "STEM Building Robot Kit"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 0.5,
+          "hit@1": 0.0
+        }
+      }
+    },
+    {
+      "id": "V08",
+      "class": "vague",
+      "query": "what to wear to a job interview",
+      "relevant": [
+        "Tailored Blazer Jacket",
+        "Slim Fit Cotton Oxford Shirt"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Tailored Blazer Jacket",
+          "Canvas Slip-On Sneakers",
+          "Merino Wool Crew Sweater",
+          "Slim Fit Cotton Oxford Shirt",
+          "Down Puffer Vest"
+        ],
+        "hybrid": [
+          "Tailored Blazer Jacket",
+          "Canvas Slip-On Sneakers",
+          "Merino Wool Crew Sweater",
+          "Slim Fit Cotton Oxford Shirt",
+          "Down Puffer Vest"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 7,
+        "hybrid": 7
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.4,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V09",
+      "class": "vague",
+      "query": "protect my skin from the sun",
+      "relevant": [
+        "SPF 50 Mineral Sunscreen"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "SPF 50 Mineral Sunscreen",
+          "Vitamin C Brightening Serum"
+        ],
+        "hybrid": [
+          "SPF 50 Mineral Sunscreen",
+          "Vitamin C Brightening Serum"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 2,
+        "hybrid": 2
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        },
+        "hybrid": {
+          "p@5": 0.2,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "hit@1": 1.0
+        }
+      }
+    },
+    {
+      "id": "V10",
+      "class": "vague",
+      "query": "make music at home",
+      "relevant": [
+        "Studio Monitor Speakers Pair"
+      ],
+      "ranked": {
+        "keyword": [],
+        "semantic": [
+          "Vintage Vinyl Turntable"
+        ],
+        "hybrid": [
+          "Vintage Vinyl Turntable"
+        ]
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 1,
+        "hybrid": 1
+      },
+      "scores": {
+        "keyword": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "semantic": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        },
+        "hybrid": {
+          "p@5": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.0,
+          "hit@1": 0.0
+        }
+      }
+    },
+    {
+      "id": "N01",
+      "class": "no_answer",
+      "query": "diesel engine spare parts",
+      "relevant": [],
+      "ranked": {
+        "keyword": [],
+        "semantic": [],
+        "hybrid": []
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 0,
+        "hybrid": 0
+      }
+    },
+    {
+      "id": "N02",
+      "class": "no_answer",
+      "query": "18 carat gold wedding ring",
+      "relevant": [],
+      "ranked": {
+        "keyword": [],
+        "semantic": [],
+        "hybrid": []
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 0,
+        "hybrid": 0
+      }
+    },
+    {
+      "id": "N03",
+      "class": "no_answer",
+      "query": "garden lawn mower",
+      "relevant": [],
+      "ranked": {
+        "keyword": [],
+        "semantic": [],
+        "hybrid": []
+      },
+      "returned": {
+        "keyword": 0,
+        "semantic": 0,
+        "hybrid": 0
+      }
+    }
+  ],
+  "classes": {
+    "exact": "The query reuses the product's own words, a brand, or a model name. Keyword search should do well here.",
+    "paraphrase": "The query states the need in different words from the product text. This is where meaning should beat strings.",
+    "vague": "A loosely worded goal or situation with several acceptable answers. Hardest for both approaches.",
+    "no_answer": "Nothing in the catalogue is relevant. The right behaviour is to return nothing, not the nearest thing."
+  }
+}

@@ -74,7 +74,7 @@ describe("serialisers", () => {
     const ld = JSON.parse(toJSONLD(results));
     expect(ld["@context"]).toBeTruthy();
     expect(ld["@graph"]).toHaveLength(1);
-    expect(ld["@graph"][0]["@type"]).toBe("schema:Product");
+    expect(ld["@graph"][0]["@type"]).toEqual(["schema:Product", "cat:MensOuterwear"]);
   });
   it("empty graphs serialise to a comment, not an error", () => {
     expect(toTurtle([])).toBe("# empty graph");

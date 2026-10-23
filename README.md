@@ -302,6 +302,58 @@ FRONTEND_URL=http://localhost:5173
 
 ---
 
+## Evaluation
+
+Run it yourself (needs the local catalogue and the cached model):
+
+```bash
+cd backend
+python -m eval.run_eval      # writes eval/RESULTS.md and eval/results.json
+pytest                       # includes regression guards on these numbers
+```
+
+30 labelled queries in three classes, plus 3 queries with no right answer
+(`backend/eval/queries.json`). Semantic search uses the production relevance floor.
+
+| Query class | Method | Recall@5 | MRR | Hit@1 |
+|---|---|---|---|---|
+| exact (10) | keyword | 1.00 | 1.00 | 1.00 |
+|  | semantic | 1.00 | 1.00 | 1.00 |
+| paraphrase (10) | keyword | 0.00 | 0.00 | 0.00 |
+|  | semantic | 1.00 | 0.95 | 0.90 |
+| vague (10) | keyword | 0.05 | 0.10 | 0.10 |
+|  | semantic | 0.73 | 0.73 | 0.60 |
+| **overall (30)** | keyword | 0.35 | 0.37 | 0.37 |
+|  | **semantic** | **0.91** | **0.89** | **0.83** |
+
+What it shows, including the unflattering parts:
+
+- Meaning wins exactly where the plan predicted: paraphrased and vague queries, where keyword
+  search finds almost nothing.
+- On exact lookups (names, brands, a model number) the two **tie**. On a 72-product catalogue
+  there is no room for semantic search to lose; a larger catalogue could differ.
+- Semantic search still misses some vague queries (`make music at home` finds the turntable,
+  not the studio monitors; `gear for a camping trip` finds 1 of 5). The full list is in
+  `eval/RESULTS.md`.
+- Fusing the two rankings (reciprocal rank fusion) gave **no gain**, so it is not in the API.
+- All three off-topic queries correctly return nothing.
+- Relevance labels were drafted from the catalogue text and are a first pass, not ground truth.
+  With 30 queries these numbers show direction, not precision.
+
+### Is the RDF valid?
+
+`frontend/src/rdf.js` is run under Node over all 72 products and its Turtle, RDF/XML and JSON-LD
+are parsed by **rdflib**, an independent implementation (`backend/tests/test_rdf_interop.py`):
+
+- all three syntaxes parse;
+- all three are isomorphic, i.e. they describe the same graph;
+- that graph equals the one the Python service (`rdf_service.py`) builds from the same rows.
+
+This check found that the JSON-LD output used to drop `dcterms:created`, category types and
+language tags and left numbers untyped. It was fixed, and the test now guards it.
+
+---
+
 ## Reading
 
 1. Thomas B. Passin, *Explorer's Guide to the Semantic Web*, Manning, 2004.
