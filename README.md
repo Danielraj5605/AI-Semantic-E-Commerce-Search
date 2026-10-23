@@ -156,6 +156,7 @@ python scripts/load_data.py           # import products from data/
 python scripts/generate_embeddings.py # embed the whole catalogue
 python scripts/set_category_hierarchy.py  # give categories parents (rdfs:subClassOf); safe to re-run
 python scripts/clear_dead_image_urls.py   # optional: null out image URLs that 404 (--dry-run to preview)
+python scripts/set_product_images.py     # optional: replacement photos for the 7 products whose original links were deleted
 ```
 
 ### 4. Run
